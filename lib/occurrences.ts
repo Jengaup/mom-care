@@ -67,13 +67,15 @@ function weekdayIso(day: string): number {
   return getISODay(toAppTz(scheduledForUtc(day, "12:00")));
 }
 
-/** Instantes de una regla fija en el día (0 o 1). */
-function fixedTimes(schedule: MedScheduleRow, day: string): Date[] {
-  if (!schedule.time_of_day) return [];
-  if (schedule.days_of_week && !schedule.days_of_week.includes(weekdayIso(day))) {
-    return [];
-  }
-  return [scheduledForUtc(day, schedule.time_of_day)];
+/** Instante de una hora fija si aplica al día (según days_of_week). */
+function fixedTimeFor(
+  timeOfDay: string | null,
+  daysOfWeek: number[] | null,
+  day: string,
+): Date[] {
+  if (!timeOfDay) return [];
+  if (daysOfWeek && !daysOfWeek.includes(weekdayIso(day))) return [];
+  return [scheduledForUtc(day, timeOfDay)];
 }
 
 /**
@@ -167,7 +169,7 @@ export function buildMedOccurrences(params: {
 
     const times =
       schedule.schedule_type === "fixed"
-        ? fixedTimes(schedule, day)
+        ? fixedTimeFor(schedule.time_of_day, schedule.days_of_week, day)
         : intervalTimes(schedule, day);
 
     for (const scheduledFor of times) {
@@ -189,6 +191,102 @@ export function buildMedOccurrences(params: {
   occurrences.sort((a, b) => a.scheduledFor.getTime() - b.scheduledFor.getTime());
   prn.sort((a, b) => a.medication.name.localeCompare(b.medication.name));
   return { occurrences, prn };
+}
+
+// ── Tareas (mismo patrón; solo horas fijas; estado done/skipped) ─────────────
+
+export type TaskScheduleRow = {
+  id: string;
+  task_id: string;
+  time_of_day: string;
+  days_of_week: number[] | null;
+};
+
+export type TaskInfo = {
+  id: string;
+  title: string;
+  description: string | null;
+  category: string | null;
+};
+
+export type TaskLogRow = {
+  id: string;
+  task_id: string;
+  schedule_id: string | null;
+  scheduled_for: string | null;
+  completed_at: string | null;
+  status: "done" | "skipped";
+  note: string | null;
+  recorded_by: string;
+};
+
+export type TaskOccurrence = {
+  taskId: string;
+  scheduleId: string;
+  title: string;
+  category: string | null;
+  scheduledFor: Date;
+  state: OccurrenceState;
+  log: TaskLogRow | null;
+};
+
+/** El estado 'done' de una tarea se mapea a 'given' (verde) del sistema común. */
+function deriveTaskState(
+  scheduledFor: Date,
+  log: TaskLogRow | null,
+  now: Date,
+  graceMinutes: number,
+): OccurrenceState {
+  if (log) return log.status === "done" ? "given" : "skipped";
+  if (now.getTime() < scheduledFor.getTime()) return "pending";
+  if (now.getTime() <= scheduledFor.getTime() + graceMinutes * 60 * 1000) {
+    return "due";
+  }
+  return "late";
+}
+
+export function buildTaskOccurrences(params: {
+  day: string;
+  now: Date;
+  graceMinutes: number;
+  tasks: TaskInfo[];
+  schedules: TaskScheduleRow[];
+  logs: TaskLogRow[];
+}): TaskOccurrence[] {
+  const { day, now, graceMinutes, tasks, schedules, logs } = params;
+  const taskById = new Map(tasks.map((t) => [t.id, t]));
+
+  const scheduledLogs = new Map<string, TaskLogRow>();
+  for (const log of logs) {
+    if (log.scheduled_for) {
+      scheduledLogs.set(
+        `${log.task_id}|${new Date(log.scheduled_for).getTime()}`,
+        log,
+      );
+    }
+  }
+
+  const occurrences: TaskOccurrence[] = [];
+  for (const schedule of schedules) {
+    const task = taskById.get(schedule.task_id);
+    if (!task) continue;
+    const times = fixedTimeFor(schedule.time_of_day, schedule.days_of_week, day);
+    for (const scheduledFor of times) {
+      const log =
+        scheduledLogs.get(`${task.id}|${scheduledFor.getTime()}`) ?? null;
+      occurrences.push({
+        taskId: task.id,
+        scheduleId: schedule.id,
+        title: task.title,
+        category: task.category,
+        scheduledFor,
+        state: deriveTaskState(scheduledFor, log, now, graceMinutes),
+        log,
+      });
+    }
+  }
+  occurrences.sort((a, b) => a.scheduledFor.getTime() - b.scheduledFor.getTime());
+  return occurrences;
 }
 
 /** Una ocurrencia está "pendiente" (aún accionable) si no tiene log resuelto. */
