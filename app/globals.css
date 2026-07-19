@@ -1,0 +1,20 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+:root {
+  color-scheme: light;
+}
+
+html,
+body {
+  /* Texto base mínimo 16px (spec 6) para legibilidad de un cuidador cansado. */
+  font-size: 16px;
+  background-color: #f9fafb;
+  color: #111827;
+  -webkit-tap-highlight-color: transparent;
+}
+
+body {
+  overscroll-behavior-y: none;
+}
