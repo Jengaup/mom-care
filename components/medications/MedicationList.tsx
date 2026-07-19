@@ -52,9 +52,11 @@ function doseLabel(dose: number | null, unit: string | null): string {
 export function MedicationList({
   groups,
   prn,
+  hidePrn = false,
 }: {
   groups: OccGroup[];
   prn: PrnDTO[];
+  hidePrn?: boolean;
 }) {
   const router = useRouter();
   const [, startTransition] = useTransition();
@@ -272,6 +274,7 @@ export function MedicationList({
       </section>
 
       {/* Según necesidad (PRN) */}
+      {hidePrn ? null : (
       <section className="space-y-2">
         <h2 className="px-1 text-sm font-bold uppercase tracking-wide text-gray-500">
           Según necesidad (PRN)
@@ -312,6 +315,7 @@ export function MedicationList({
           ))
         )}
       </section>
+      )}
 
       {/* Sheet de acciones secundarias */}
       <Sheet
