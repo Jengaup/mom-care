@@ -2,7 +2,9 @@
 
 import { revalidatePath } from "next/cache";
 import { createClient } from "@/lib/supabase/server";
-import { requireUser } from "@/lib/auth";
+import { requireRole, requireUser } from "@/lib/auth";
+import { getActivePatient } from "@/lib/patient";
+import type { TablesInsert } from "@/types/database";
 
 export type TaskStatus = "done" | "skipped";
 
@@ -66,6 +68,49 @@ export async function recordTask(input: {
     }
     return { ok: false, conflict: false, message: "No se pudo registrar." };
   }
+
+  revalidatePath("/tareas");
+  revalidatePath("/");
+  return { ok: true };
+}
+
+/** Crea una tarea recurrente con sus horas (admin). */
+export async function createTask(input: {
+  title: string;
+  description: string | null;
+  category: string | null;
+  times: string[];
+  daysOfWeek: number[] | null;
+}): Promise<{ ok: boolean; message?: string }> {
+  const user = await requireRole("admin");
+  const patient = await getActivePatient();
+  if (!patient) return { ok: false, message: "No hay paciente activo." };
+  const supabase = await createClient();
+
+  const { data: task, error } = await supabase
+    .from("tasks")
+    .insert({
+      patient_id: patient.id,
+      title: input.title.trim(),
+      description: input.description?.trim() || null,
+      category: input.category?.trim() || null,
+      created_by: user.id,
+    })
+    .select("id")
+    .single();
+  if (error || !task) return { ok: false, message: "No se pudo crear la tarea." };
+
+  const rows: TablesInsert<"task_schedules">[] = input.times
+    .filter(Boolean)
+    .map((t) => ({
+      task_id: task.id,
+      time_of_day: t,
+      days_of_week: input.daysOfWeek,
+    }));
+  if (rows.length === 0) return { ok: false, message: "Añade al menos una hora." };
+
+  const { error: schedErr } = await supabase.from("task_schedules").insert(rows);
+  if (schedErr) return { ok: false, message: "No se pudo crear el horario." };
 
   revalidatePath("/tareas");
   revalidatePath("/");

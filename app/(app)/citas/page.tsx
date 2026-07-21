@@ -1,4 +1,5 @@
 import Link from "next/link";
+import { getSessionUser } from "@/lib/auth";
 import { getActivePatient } from "@/lib/patient";
 import { createClient } from "@/lib/supabase/server";
 import { formatApp, now } from "@/lib/time";
@@ -42,6 +43,7 @@ export default async function CitasPage() {
     return <EmptyState title="No hay un paciente asignado a tu cuenta." />;
   }
 
+  const user = await getSessionUser();
   const supabase = await createClient();
   const nowISO = now().toISOString();
 
@@ -66,7 +68,17 @@ export default async function CitasPage() {
 
   return (
     <div className="space-y-6">
-      <h1 className="text-2xl font-bold text-gray-900">Citas</h1>
+      <header className="flex items-center justify-between">
+        <h1 className="text-2xl font-bold text-gray-900">Citas</h1>
+        {user?.role === "admin" ? (
+          <Link
+            href="/citas/nueva"
+            className="min-h-touch inline-flex items-center rounded-xl bg-status-done px-4 font-semibold text-white"
+          >
+            + Nuevo
+          </Link>
+        ) : null}
+      </header>
 
       <section className="space-y-2">
         <h2 className="px-1 text-sm font-bold uppercase tracking-wide text-gray-500">
