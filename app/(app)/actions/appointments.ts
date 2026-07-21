@@ -3,6 +3,8 @@
 import { revalidatePath } from "next/cache";
 import { createClient } from "@/lib/supabase/server";
 import { requireRole } from "@/lib/auth";
+import { getActivePatient } from "@/lib/patient";
+import { scheduledForUtc } from "@/lib/time";
 
 /** Marca una cita como completada y guarda sus notas (spec pantalla 6). */
 export async function completeAppointment(input: {
@@ -33,6 +35,48 @@ export async function completeAppointment(input: {
 
   revalidatePath("/citas");
   revalidatePath(`/citas/${input.appointmentId}`);
+  revalidatePath("/");
+  return { ok: true };
+}
+
+/** Crea una cita (admin). scheduledAtLocal viene de un input datetime-local
+ * (hora de pared) y se interpreta en AST. */
+export async function createAppointment(input: {
+  title: string;
+  doctorName: string | null;
+  specialty: string | null;
+  clinic: string | null;
+  scheduledAtLocal: string;
+  address: string | null;
+  phone: string | null;
+  notes: string | null;
+}): Promise<{ ok: boolean; message?: string }> {
+  const user = await requireRole("admin");
+  const patient = await getActivePatient();
+  if (!patient) return { ok: false, message: "No hay paciente activo." };
+  if (!input.scheduledAtLocal) return { ok: false, message: "Falta la fecha." };
+  const supabase = await createClient();
+
+  const [d, t] = input.scheduledAtLocal.split("T");
+  if (!d) return { ok: false, message: "Fecha inválida." };
+  const scheduledAtISO = scheduledForUtc(d, t ?? "00:00").toISOString();
+
+  const { error } = await supabase.from("appointments").insert({
+    patient_id: patient.id,
+    title: input.title.trim(),
+    doctor_name: input.doctorName?.trim() || null,
+    specialty: input.specialty?.trim() || null,
+    clinic: input.clinic?.trim() || null,
+    scheduled_at: scheduledAtISO,
+    address: input.address?.trim() || null,
+    phone: input.phone?.trim() || null,
+    notes: input.notes?.trim() || null,
+    status: "upcoming",
+    created_by: user.id,
+  });
+  if (error) return { ok: false, message: "No se pudo crear la cita." };
+
+  revalidatePath("/citas");
   revalidatePath("/");
   return { ok: true };
 }
