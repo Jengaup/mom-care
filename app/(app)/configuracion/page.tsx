@@ -47,6 +47,13 @@ export default async function ConfiguracionPage() {
   return (
     <div className="space-y-4">
       <h1 className="text-2xl font-bold text-gray-900">Configuración</h1>
+      <a
+        href="/reporte"
+        className="min-h-touch flex items-center justify-between rounded-2xl border border-gray-200 bg-white px-4 font-semibold text-gray-900"
+      >
+        <span>📄 Reporte del paciente</span>
+        <span className="text-gray-400">›</span>
+      </a>
       {patient ? (
         <PatientsCard
           patients={linkedPatients}

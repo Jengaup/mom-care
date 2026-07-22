@@ -221,9 +221,14 @@ export default async function DashboardPage() {
       <section className="space-y-2">
         <div className="flex items-center justify-between">
           <h2 className="text-lg font-bold text-gray-900">Actividad reciente</h2>
-          <Link href="/historial" className="text-sm text-status-done">
-            Historial
-          </Link>
+          <div className="flex gap-3">
+            <Link href="/reporte" className="text-sm text-status-done">
+              Reporte
+            </Link>
+            <Link href="/historial" className="text-sm text-status-done">
+              Historial
+            </Link>
+          </div>
         </div>
         <ActivityFeed items={activityItems} />
       </section>

@@ -18,3 +18,20 @@ body {
 body {
   overscroll-behavior-y: none;
 }
+
+/* Impresión / Guardar PDF del reporte: solo el documento, sin nav ni controles. */
+@media print {
+  nav,
+  .no-print {
+    display: none !important;
+  }
+  header {
+    position: static !important;
+  }
+  body {
+    background: #fff;
+  }
+  main {
+    padding: 0 !important;
+  }
+}
