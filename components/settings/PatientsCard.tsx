@@ -12,7 +12,7 @@ import {
 
 type PatientLite = { id: string; full_name: string };
 
-const field = "min-h-touch w-full rounded-xl border border-gray-300 px-4 text-base";
+const field = "min-h-touch w-full rounded-xl border border-line px-4 text-base";
 
 export function PatientsCard({
   patients,
@@ -108,7 +108,7 @@ export function PatientsCard({
                 className={`min-h-touch flex w-full items-center justify-between rounded-xl border px-4 text-left text-base ${
                   isActive
                     ? "border-status-done bg-green-50 font-semibold text-status-done"
-                    : "border-gray-300 text-gray-800"
+                    : "border-line text-ink"
                 }`}
               >
                 <span className="truncate">{p.full_name}</span>
@@ -122,7 +122,7 @@ export function PatientsCard({
       </ul>
 
       {isAdmin ? (
-        <div className="space-y-2 border-t border-gray-100 pt-3">
+        <div className="space-y-2 border-t border-line pt-3">
           {/* Editar activo */}
           {!editOpen ? (
             <Button
@@ -139,14 +139,14 @@ export function PatientsCard({
               Editar paciente activo
             </Button>
           ) : (
-            <div className="space-y-2 rounded-xl bg-gray-50 p-3">
+            <div className="space-y-2 rounded-xl bg-black/[0.03] p-3">
               <input
                 value={eName}
                 onChange={(e) => setEName(e.target.value)}
                 placeholder="Nombre completo"
                 className={field}
               />
-              <label className="text-sm text-gray-600">Fecha de nacimiento</label>
+              <label className="text-sm text-muted">Fecha de nacimiento</label>
               <input
                 type="date"
                 value={eBirth}
@@ -158,7 +158,7 @@ export function PatientsCard({
                 onChange={(e) => setENotes(e.target.value)}
                 placeholder="Notas"
                 rows={2}
-                className="w-full rounded-xl border border-gray-300 p-3 text-base"
+                className="w-full rounded-xl border border-line p-3 text-base"
               />
               <div className="grid grid-cols-2 gap-2">
                 <Button variant="secondary" onClick={() => setEditOpen(false)}>
@@ -180,14 +180,14 @@ export function PatientsCard({
               + Crear paciente
             </Button>
           ) : (
-            <div className="space-y-2 rounded-xl bg-gray-50 p-3">
+            <div className="space-y-2 rounded-xl bg-black/[0.03] p-3">
               <input
                 value={cName}
                 onChange={(e) => setCName(e.target.value)}
                 placeholder="Nombre del paciente"
                 className={field}
               />
-              <label className="text-sm text-gray-600">Fecha de nacimiento</label>
+              <label className="text-sm text-muted">Fecha de nacimiento</label>
               <input
                 type="date"
                 value={cBirth}
@@ -199,7 +199,7 @@ export function PatientsCard({
                 onChange={(e) => setCNotes(e.target.value)}
                 placeholder="Notas (alergias, condiciones…)"
                 rows={2}
-                className="w-full rounded-xl border border-gray-300 p-3 text-base"
+                className="w-full rounded-xl border border-line p-3 text-base"
               />
               <div className="grid grid-cols-2 gap-2">
                 <Button variant="secondary" onClick={() => setCreateOpen(false)}>
@@ -214,7 +214,7 @@ export function PatientsCard({
         </div>
       ) : null}
 
-      {msg ? <p className="text-sm text-gray-500">{msg}</p> : null}
+      {msg ? <p className="text-sm text-muted">{msg}</p> : null}
     </Card>
   );
 }

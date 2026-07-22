@@ -24,7 +24,7 @@ const DAYS = [
   { iso: 7, label: "D" },
 ];
 
-const field = "min-h-touch w-full rounded-xl border border-gray-300 px-4 text-base";
+const field = "min-h-touch w-full rounded-xl border border-line px-4 text-base";
 
 export function NewMedicationForm() {
   const router = useRouter();
@@ -122,7 +122,7 @@ export function NewMedicationForm() {
       {/* Paso 1: catálogo */}
       {!hasMed ? (
         <Card className="space-y-3">
-          <label className="text-sm font-medium text-gray-700">
+          <label className="text-sm font-medium text-ink/80">
             Buscar medicamento
           </label>
           <div className="flex gap-2">
@@ -138,7 +138,7 @@ export function NewMedicationForm() {
             </Button>
           </div>
 
-          <ul className="divide-y divide-gray-100">
+          <ul className="divide-y divide-line">
             {results.map((item) => (
               <li key={item.id}>
                 <button
@@ -146,7 +146,7 @@ export function NewMedicationForm() {
                   className="min-h-touch flex w-full items-center justify-between px-1 text-left text-base"
                 >
                   <span>{item.name}</span>
-                  <span className="text-sm text-gray-400">
+                  <span className="text-sm text-muted">
                     {item.default_unit}
                   </span>
                 </button>
@@ -163,7 +163,7 @@ export function NewMedicationForm() {
               No está en la lista — añadir manualmente
             </Button>
           ) : (
-            <div className="space-y-2 rounded-xl bg-gray-50 p-3">
+            <div className="space-y-2 rounded-xl bg-black/[0.03] p-3">
               <input
                 value={manualName}
                 onChange={(e) => setManualName(e.target.value)}
@@ -185,7 +185,7 @@ export function NewMedicationForm() {
       ) : (
         <Card className="space-y-3">
           <div className="flex items-center justify-between">
-            <p className="text-lg font-semibold text-gray-900">{name}</p>
+            <p className="text-lg font-semibold text-ink">{name}</p>
             <button
               className="text-sm text-status-late"
               onClick={() => {
@@ -216,7 +216,7 @@ export function NewMedicationForm() {
             onChange={(e) => setInstructions(e.target.value)}
             placeholder="Instrucciones (opcional)"
             rows={2}
-            className="w-full rounded-xl border border-gray-300 p-3 text-base"
+            className="w-full rounded-xl border border-line p-3 text-base"
           />
         </Card>
       )}
@@ -224,7 +224,7 @@ export function NewMedicationForm() {
       {/* Paso 2: frecuencia */}
       {hasMed ? (
         <Card className="space-y-3">
-          <p className="text-sm font-medium text-gray-700">Frecuencia</p>
+          <p className="text-sm font-medium text-ink/80">Frecuencia</p>
           <div className="grid grid-cols-3 gap-2">
             {(
               [
@@ -239,7 +239,7 @@ export function NewMedicationForm() {
                 className={`min-h-touch rounded-xl border px-2 text-sm font-semibold ${
                   scheduleType === value
                     ? "border-status-done bg-green-50 text-status-done"
-                    : "border-gray-300 text-gray-600"
+                    : "border-line text-muted"
                 }`}
               >
                 {label}
@@ -268,7 +268,7 @@ export function NewMedicationForm() {
                       className={`min-h-touch rounded-lg border text-sm font-semibold ${
                         selected
                           ? "border-status-done bg-green-50 text-status-done"
-                          : "border-gray-300 text-gray-600"
+                          : "border-line text-muted"
                       }`}
                     >
                       {label}
@@ -276,7 +276,7 @@ export function NewMedicationForm() {
                   );
                 })}
               </div>
-              <p className="text-xs text-gray-400">
+              <p className="text-xs text-muted">
                 Elige una frecuencia o ajusta las horas manualmente.
               </p>
               {fixedTimes.map((t, i) => (
@@ -311,7 +311,7 @@ export function NewMedicationForm() {
                 + Añadir hora
               </Button>
 
-              <label className="flex items-center gap-2 text-base text-gray-700">
+              <label className="flex items-center gap-2 text-base text-ink/80">
                 <input
                   type="checkbox"
                   checked={everyDay}
@@ -329,7 +329,7 @@ export function NewMedicationForm() {
                       className={`min-h-touch flex-1 rounded-lg border text-sm font-semibold ${
                         days.includes(d.iso)
                           ? "border-status-done bg-green-50 text-status-done"
-                          : "border-gray-300 text-gray-500"
+                          : "border-line text-muted"
                       }`}
                     >
                       {d.label}
@@ -343,7 +343,7 @@ export function NewMedicationForm() {
           {scheduleType === "interval" ? (
             <div className="grid grid-cols-2 gap-2">
               <div>
-                <label className="text-sm text-gray-600">Cada (horas)</label>
+                <label className="text-sm text-muted">Cada (horas)</label>
                 <input
                   value={intervalHours}
                   onChange={(e) => setIntervalHours(e.target.value)}
@@ -352,7 +352,7 @@ export function NewMedicationForm() {
                 />
               </div>
               <div>
-                <label className="text-sm text-gray-600">Primera dosis</label>
+                <label className="text-sm text-muted">Primera dosis</label>
                 <input
                   type="time"
                   value={anchorTime}
@@ -372,7 +372,7 @@ export function NewMedicationForm() {
                 className={field}
               />
               <div>
-                <label className="text-sm text-gray-600">
+                <label className="text-sm text-muted">
                   Mínimo entre dosis (horas)
                 </label>
                 <input

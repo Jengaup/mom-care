@@ -6,7 +6,7 @@ import { Button } from "@/components/ui/Button";
 import { Card } from "@/components/ui/Card";
 import { completeAppointment } from "@/app/(app)/actions/appointments";
 
-const field = "w-full rounded-xl border border-gray-300 p-3 text-base";
+const field = "w-full rounded-xl border border-line p-3 text-base";
 
 export function CompleteAppointmentForm({
   appointmentId,
@@ -52,7 +52,7 @@ export function CompleteAppointmentForm({
 
   return (
     <Card className="space-y-3">
-      <h2 className="text-lg font-bold text-gray-900">Notas de la cita</h2>
+      <h2 className="text-lg font-bold text-ink">Notas de la cita</h2>
       <textarea
         value={summary}
         onChange={(e) => setSummary(e.target.value)}
@@ -75,12 +75,12 @@ export function CompleteAppointmentForm({
         className={field}
       />
       <div>
-        <label className="text-sm text-gray-600">Próxima cita (opcional)</label>
+        <label className="text-sm text-muted">Próxima cita (opcional)</label>
         <input
           type="datetime-local"
           value={nextAppointmentAt}
           onChange={(e) => setNextAppointmentAt(e.target.value)}
-          className="min-h-touch w-full rounded-xl border border-gray-300 px-4 text-base"
+          className="min-h-touch w-full rounded-xl border border-line px-4 text-base"
         />
       </div>
       {error ? <p className="text-sm text-status-late">{error}</p> : null}

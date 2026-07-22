@@ -16,7 +16,7 @@ const DAYS = [
   { iso: 7, label: "D" },
 ];
 
-const field = "min-h-touch w-full rounded-xl border border-gray-300 px-4 text-base";
+const field = "min-h-touch w-full rounded-xl border border-line px-4 text-base";
 
 export function NewTaskForm() {
   const router = useRouter();
@@ -76,12 +76,12 @@ export function NewTaskForm() {
           onChange={(e) => setDescription(e.target.value)}
           placeholder="Descripción (opcional)"
           rows={2}
-          className="w-full rounded-xl border border-gray-300 p-3 text-base"
+          className="w-full rounded-xl border border-line p-3 text-base"
         />
       </Card>
 
       <Card className="space-y-2">
-        <p className="text-sm font-medium text-gray-700">Horas</p>
+        <p className="text-sm font-medium text-ink/80">Horas</p>
         {times.map((t, i) => (
           <div key={i} className="flex gap-2">
             <input
@@ -107,7 +107,7 @@ export function NewTaskForm() {
           + Añadir hora
         </Button>
 
-        <label className="flex items-center gap-2 text-base text-gray-700">
+        <label className="flex items-center gap-2 text-base text-ink/80">
           <input
             type="checkbox"
             checked={everyDay}
@@ -125,7 +125,7 @@ export function NewTaskForm() {
                 className={`min-h-touch flex-1 rounded-lg border text-sm font-semibold ${
                   days.includes(d.iso)
                     ? "border-status-done bg-green-50 text-status-done"
-                    : "border-gray-300 text-gray-500"
+                    : "border-line text-muted"
                 }`}
               >
                 {d.label}

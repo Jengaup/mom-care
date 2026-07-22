@@ -9,20 +9,31 @@ const config: Config = {
   theme: {
     extend: {
       colors: {
-        // Sistema de estado centralizado (spec 6). No usar colores sueltos en la UI.
+        // Paleta cálida "diario de cuidado" (no gris clínico).
+        bg: "#f6f4ef",
+        surface: "#ffffff",
+        ink: "#1f2a28",
+        muted: "#6b7773",
+        line: "#e8e4db",
+        brand: { DEFAULT: "#15803d", dark: "#166534", soft: "#e8f2ea" },
+        // Sistema de estado centralizado (spec 6). No usar colores sueltos.
         status: {
           done: "#16a34a", // verde  - hecho / dado
-          pending: "#ca8a04", // amarillo - pendiente / toca ahora
+          pending: "#d97706", // ámbar  - pendiente / toca ahora
           late: "#dc2626", // rojo   - atrasado / omitido
-          inactive: "#6b7280", // gris   - inactivo
+          inactive: "#8a9490", // gris   - inactivo
         },
       },
-      minHeight: {
-        touch: "48px",
+      fontFamily: {
+        sans: ["var(--font-figtree)", "system-ui", "sans-serif"],
+        display: ["var(--font-fraunces)", "Georgia", "serif"],
       },
-      minWidth: {
-        touch: "48px",
+      boxShadow: {
+        card: "0 1px 2px rgba(31, 42, 40, 0.04), 0 4px 16px rgba(31, 42, 40, 0.05)",
+        nav: "0 -1px 0 rgba(31,42,40,0.06), 0 -8px 24px rgba(31,42,40,0.05)",
       },
+      minHeight: { touch: "48px" },
+      minWidth: { touch: "48px" },
     },
   },
   plugins: [],

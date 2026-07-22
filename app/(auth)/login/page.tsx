@@ -18,12 +18,23 @@ export default async function LoginPage() {
   }
 
   return (
-    <div className="mx-auto flex min-h-dvh max-w-sm flex-col justify-center px-6">
-      <div className="mb-8 text-center">
-        <h1 className="text-3xl font-bold text-status-done">mom-care</h1>
-        <p className="mt-1 text-gray-500">Cuidado coordinado, sin olvidos</p>
+    <div className="mx-auto flex min-h-dvh max-w-sm flex-col justify-center px-6 py-10">
+      <div className="mb-10 text-center">
+        <span
+          className="mx-auto mb-4 flex h-16 w-16 items-center justify-center rounded-2xl bg-brand-soft text-3xl shadow-card"
+          aria-hidden
+        >
+          🤍
+        </span>
+        <h1 className="font-display text-4xl font-semibold tracking-tight text-brand-dark">
+          mom-care
+        </h1>
+        <p className="mt-2 text-muted">Cuidado coordinado, sin olvidos.</p>
       </div>
       <LoginForm />
+      <p className="mt-8 text-center text-sm text-muted">
+        Entra con tu correo y contraseña para continuar.
+      </p>
     </div>
   );
 }

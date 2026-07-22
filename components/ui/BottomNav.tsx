@@ -20,23 +20,32 @@ export function BottomNav() {
   const pathname = usePathname();
 
   return (
-    <nav className="fixed inset-x-0 bottom-0 z-40 border-t border-gray-200 bg-white/95 backdrop-blur">
-      <ul className="mx-auto flex max-w-lg items-stretch justify-between">
+    <nav className="fixed inset-x-0 bottom-0 z-40 border-t border-line bg-surface/95 shadow-nav backdrop-blur">
+      <ul className="mx-auto flex max-w-lg items-stretch justify-between px-2 pb-[env(safe-area-inset-bottom)]">
         {ITEMS.map((item) => {
           const active = isActive(pathname, item.href);
           return (
             <li key={item.href} className="flex-1">
               <Link
                 href={item.href}
-                className={`flex min-h-touch flex-col items-center justify-center gap-0.5 py-2 text-xs font-medium ${
-                  active ? "text-status-done" : "text-gray-500"
-                }`}
+                className="flex min-h-touch flex-col items-center justify-center gap-1 py-2"
                 aria-current={active ? "page" : undefined}
               >
-                <span className="text-xl" aria-hidden>
+                <span
+                  className={`flex h-8 w-12 items-center justify-center rounded-full text-lg transition-colors ${
+                    active ? "bg-brand-soft" : ""
+                  }`}
+                  aria-hidden
+                >
                   {item.icon}
                 </span>
-                {item.label}
+                <span
+                  className={`text-xs font-semibold ${
+                    active ? "text-brand-dark" : "text-muted"
+                  }`}
+                >
+                  {item.label}
+                </span>
               </Link>
             </li>
           );

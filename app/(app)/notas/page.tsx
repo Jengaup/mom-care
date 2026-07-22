@@ -49,15 +49,15 @@ export default async function NotasPage() {
   return (
     <div className="space-y-6">
       <div className="space-y-2">
-        <h1 className="text-2xl font-bold text-gray-900">Nota de hoy</h1>
-        <p className="text-sm text-gray-500">
+        <h1 className="font-display text-2xl font-semibold text-ink">Nota de hoy</h1>
+        <p className="text-sm text-muted">
           {formatApp(`${today}T12:00:00`, "EEEE, d 'de' MMMM")}
         </p>
         <NoteEditor initial={todayNote?.content ?? ""} />
       </div>
 
       <section className="space-y-2">
-        <h2 className="px-1 text-sm font-bold uppercase tracking-wide text-gray-500">
+        <h2 className="px-1 text-sm font-bold uppercase tracking-wide text-muted">
           Historial
         </h2>
         {past.length === 0 ? (
@@ -66,14 +66,14 @@ export default async function NotasPage() {
           past.map((n) => (
             <Card key={n.id} className="space-y-1">
               <div className="flex items-center justify-between">
-                <p className="text-sm font-semibold text-gray-700">
+                <p className="text-sm font-semibold text-ink/80">
                   {formatApp(`${n.note_date}T12:00:00`, "d MMM yyyy")}
                 </p>
-                <p className="text-sm text-gray-400">
+                <p className="text-sm text-muted">
                   {authorName.get(n.author_id) ?? "—"}
                 </p>
               </div>
-              <p className="whitespace-pre-wrap text-gray-800">{n.content}</p>
+              <p className="whitespace-pre-wrap text-ink">{n.content}</p>
             </Card>
           ))
         )}

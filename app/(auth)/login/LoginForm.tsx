@@ -53,7 +53,7 @@ export function LoginForm() {
   return (
     <form onSubmit={signInWithPassword} className="space-y-4">
       <div className="space-y-1">
-        <label htmlFor="email" className="text-sm font-medium text-gray-700">
+        <label htmlFor="email" className="text-sm font-medium text-ink/80">
           Correo
         </label>
         <input
@@ -63,12 +63,12 @@ export function LoginForm() {
           required
           value={email}
           onChange={(e) => setEmail(e.target.value)}
-          className="min-h-touch w-full rounded-xl border border-gray-300 px-4 text-base"
+          className="min-h-touch w-full rounded-xl border border-line px-4 text-base"
         />
       </div>
 
       <div className="space-y-1">
-        <label htmlFor="password" className="text-sm font-medium text-gray-700">
+        <label htmlFor="password" className="text-sm font-medium text-ink/80">
           Contraseña
         </label>
         <input
@@ -77,7 +77,7 @@ export function LoginForm() {
           autoComplete="current-password"
           value={password}
           onChange={(e) => setPassword(e.target.value)}
-          className="min-h-touch w-full rounded-xl border border-gray-300 px-4 text-base"
+          className="min-h-touch w-full rounded-xl border border-line px-4 text-base"
         />
       </div>
 

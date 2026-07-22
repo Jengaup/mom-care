@@ -10,13 +10,29 @@ html,
 body {
   /* Texto base mínimo 16px (spec 6) para legibilidad de un cuidador cansado. */
   font-size: 16px;
-  background-color: #f9fafb;
-  color: #111827;
+  background-color: #f6f4ef;
+  color: #1f2a28;
+  font-family: var(--font-figtree), system-ui, sans-serif;
   -webkit-tap-highlight-color: transparent;
+  -webkit-font-smoothing: antialiased;
 }
 
 body {
   overscroll-behavior-y: none;
+}
+
+@layer base {
+  /* Controles de formulario legibles sobre el fondo cálido. */
+  input,
+  textarea,
+  select {
+    background-color: #ffffff;
+    color: #1f2a28;
+  }
+  input::placeholder,
+  textarea::placeholder {
+    color: #9aa5a1;
+  }
 }
 
 /* Impresión / Guardar PDF del reporte: solo el documento, sin nav ni controles. */
