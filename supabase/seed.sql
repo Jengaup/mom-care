@@ -236,3 +236,89 @@ values
    (((current_date - 1)::timestamp + interval '9 hours 20 minutes') at time zone 'America/Puerto_Rico'),
    'done', 'c0000000-0000-0000-0000-0000000000c1')
 on conflict (id) do nothing;
+
+-- ── Catálogo ampliado (idempotente; requiere unaccent de la migración 0007) ──
+-- 2) Catálogo ampliado (genéricos comunes + marcas). No duplica (compara sin
+--    acentos ni mayúsculas). Puedes seguir añadiendo los tuyos desde la app.
+insert into public.medication_catalog (name, default_unit, is_custom)
+select c.name, c.unit, false
+from (values
+  -- Dolor / antiinflamatorios
+  ('Acetaminofén','mg'), ('Ibuprofeno','mg'), ('Naproxeno','mg'), ('Aspirina','mg'),
+  ('Diclofenaco','mg'), ('Ketorolaco','mg'), ('Celecoxib','mg'), ('Meloxicam','mg'),
+  ('Tramadol','mg'), ('Codeína','mg'), ('Morfina','mg'), ('Oxicodona','mg'),
+  ('Gabapentina','mg'), ('Pregabalina','mg'),
+  -- Antibióticos
+  ('Amoxicilina','mg'), ('Amoxicilina/Clavulánico','mg'), ('Azitromicina','mg'),
+  ('Ciprofloxacino','mg'), ('Levofloxacino','mg'), ('Cefalexina','mg'),
+  ('Clindamicina','mg'), ('Doxiciclina','mg'), ('Metronidazol','mg'),
+  ('Nitrofurantoína','mg'), ('Trimetoprim/Sulfametoxazol','mg'), ('Penicilina','mg'),
+  -- Diabetes
+  ('Metformina','mg'), ('Glipizida','mg'), ('Glimepirida','mg'), ('Sitagliptina','mg'),
+  ('Empagliflozina','mg'), ('Dapagliflozina','mg'), ('Semaglutida','mg'),
+  ('Insulina glargina','unidades'), ('Insulina lispro','unidades'), ('Insulina NPH','unidades'),
+  -- Presión / corazón
+  ('Losartán','mg'), ('Valsartán','mg'), ('Lisinopril','mg'), ('Enalapril','mg'),
+  ('Amlodipino','mg'), ('Nifedipino','mg'), ('Hidroclorotiazida','mg'), ('Clortalidona','mg'),
+  ('Furosemida','mg'), ('Espironolactona','mg'), ('Metoprolol','mg'), ('Carvedilol','mg'),
+  ('Atenolol','mg'), ('Bisoprolol','mg'), ('Propranolol','mg'), ('Diltiazem','mg'),
+  ('Verapamilo','mg'), ('Hidralazina','mg'), ('Clonidina','mg'), ('Digoxina','mg'),
+  -- Colesterol
+  ('Atorvastatina','mg'), ('Rosuvastatina','mg'), ('Simvastatina','mg'), ('Pravastatina','mg'),
+  ('Ezetimiba','mg'), ('Fenofibrato','mg'), ('Gemfibrozilo','mg'),
+  -- Anticoagulantes / antiplaquetarios
+  ('Warfarina','mg'), ('Apixabán','mg'), ('Rivaroxabán','mg'), ('Clopidogrel','mg'),
+  ('Enoxaparina','mg'),
+  -- Estómago
+  ('Omeprazol','mg'), ('Esomeprazol','mg'), ('Pantoprazol','mg'), ('Lansoprazol','mg'),
+  ('Famotidina','mg'), ('Ranitidina','mg'), ('Sucralfato','mg'),
+  ('Ondansetrón','mg'), ('Metoclopramida','mg'), ('Loperamida','mg'),
+  ('Bisacodilo','mg'), ('Docusato','mg'), ('Polietilenglicol','g'), ('Senósidos','mg'),
+  ('Lactulosa','mL'),
+  -- Tiroides / esteroides
+  ('Levotiroxina','mcg'), ('Prednisona','mg'), ('Prednisolona','mg'),
+  ('Dexametasona','mg'), ('Metilprednisolona','mg'), ('Hidrocortisona','mg'),
+  -- Respiratorio / alergia
+  ('Albuterol','mcg'), ('Salbutamol','mcg'), ('Ipratropio','mcg'), ('Tiotropio','mcg'),
+  ('Budesonida','mcg'), ('Fluticasona','mcg'), ('Montelukast','mg'),
+  ('Loratadina','mg'), ('Cetirizina','mg'), ('Fexofenadina','mg'),
+  ('Difenhidramina','mg'), ('Clorfeniramina','mg'),
+  -- Salud mental / sueño
+  ('Sertralina','mg'), ('Fluoxetina','mg'), ('Escitalopram','mg'), ('Citalopram','mg'),
+  ('Paroxetina','mg'), ('Venlafaxina','mg'), ('Duloxetina','mg'), ('Bupropión','mg'),
+  ('Mirtazapina','mg'), ('Trazodona','mg'), ('Amitriptilina','mg'),
+  ('Alprazolam','mg'), ('Lorazepam','mg'), ('Clonazepam','mg'), ('Diazepam','mg'),
+  ('Zolpidem','mg'), ('Melatonina','mg'),
+  ('Quetiapina','mg'), ('Risperidona','mg'), ('Olanzapina','mg'), ('Haloperidol','mg'),
+  ('Aripiprazol','mg'),
+  -- Neurología / próstata / gota
+  ('Donepezilo','mg'), ('Memantina','mg'), ('Rivastigmina','mg'),
+  ('Levodopa/Carbidopa','mg'), ('Tamsulosina','mg'), ('Finasterida','mg'),
+  ('Oxibutinina','mg'), ('Alopurinol','mg'), ('Colchicina','mg'),
+  -- Vitaminas / suplementos
+  ('Vitamina D','UI'), ('Vitamina B12','mcg'), ('Ácido fólico','mg'),
+  ('Vitamina C','mg'), ('Sulfato ferroso','mg'), ('Carbonato de calcio','mg'),
+  ('Cloruro de potasio','mEq'), ('Óxido de magnesio','mg'), ('Multivitamínico',null),
+  ('Complejo B',null),
+  -- Marcas comunes (PR/EE.UU.)
+  ('Tylenol','mg'), ('Advil','mg'), ('Motrin','mg'), ('Aleve','mg'), ('Bayer','mg'),
+  ('Excedrin','mg'), ('Eliquis','mg'), ('Xarelto','mg'), ('Plavix','mg'),
+  ('Coumadin','mg'), ('Lipitor','mg'), ('Crestor','mg'), ('Zocor','mg'),
+  ('Nexium','mg'), ('Prilosec','mg'), ('Protonix','mg'), ('Pepcid','mg'),
+  ('Synthroid','mcg'), ('Glucophage','mg'), ('Januvia','mg'), ('Jardiance','mg'),
+  ('Farxiga','mg'), ('Ozempic','mg'), ('Trulicity','mg'), ('Lantus','unidades'),
+  ('Humalog','unidades'), ('Lasix','mg'), ('Norvasc','mg'), ('Cozaar','mg'),
+  ('Diovan','mg'), ('Toprol XL','mg'), ('Coreg','mg'), ('Cardizem','mg'),
+  ('Lyrica','mg'), ('Neurontin','mg'), ('Percocet','mg'), ('Oxycontin','mg'),
+  ('Xanax','mg'), ('Ativan','mg'), ('Klonopin','mg'), ('Valium','mg'), ('Ambien','mg'),
+  ('Zoloft','mg'), ('Prozac','mg'), ('Lexapro','mg'), ('Cymbalta','mg'),
+  ('Effexor','mg'), ('Wellbutrin','mg'), ('Seroquel','mg'), ('Abilify','mg'),
+  ('Aricept','mg'), ('Namenda','mg'), ('Ventolin','mcg'), ('ProAir','mcg'),
+  ('Spiriva','mcg'), ('Symbicort','mcg'), ('Advair','mcg'), ('Singulair','mg'),
+  ('Flonase','mcg'), ('Zyrtec','mg'), ('Claritin','mg'), ('Allegra','mg'),
+  ('Benadryl','mg'), ('Flomax','mg'), ('Viagra','mg'), ('Cialis','mg')
+) as c(name, unit)
+where not exists (
+  select 1 from public.medication_catalog m
+  where unaccent(lower(m.name)) = unaccent(lower(c.name))
+);
