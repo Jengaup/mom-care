@@ -1,8 +1,9 @@
 import { getSessionUser } from "@/lib/auth";
-import { getActivePatient } from "@/lib/patient";
+import { getActivePatient, getLinkedPatients } from "@/lib/patient";
 import { createClient } from "@/lib/supabase/server";
 import { EmptyState } from "@/components/ui/EmptyState";
 import { SettingsClient } from "@/components/settings/SettingsClient";
+import { PatientsCard } from "@/components/settings/PatientsCard";
 
 export const dynamic = "force-dynamic";
 
@@ -14,6 +15,7 @@ export default async function ConfiguracionPage() {
   }
 
   const supabase = await createClient();
+  const linkedPatients = await getLinkedPatients();
 
   const { data: profile } = await supabase
     .from("profiles")
@@ -45,6 +47,19 @@ export default async function ConfiguracionPage() {
   return (
     <div className="space-y-4">
       <h1 className="text-2xl font-bold text-gray-900">Configuración</h1>
+      {patient ? (
+        <PatientsCard
+          patients={linkedPatients}
+          activeId={patient.id}
+          active={{
+            id: patient.id,
+            full_name: patient.full_name,
+            birth_date: patient.birth_date,
+            notes: patient.notes,
+          }}
+          isAdmin={user.role === "admin"}
+        />
+      ) : null}
       <SettingsClient
         me={{
           id: user.id,
