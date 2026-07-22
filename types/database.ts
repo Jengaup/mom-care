@@ -494,7 +494,10 @@ export type Database = {
       [_ in never]: never;
     };
     Functions: {
-      [_ in never]: never;
+      search_medication_catalog: {
+        Args: { q: string };
+        Returns: Database["public"]["Tables"]["medication_catalog"]["Row"][];
+      };
     };
     Enums: {
       user_role: "admin" | "caregiver";

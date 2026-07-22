@@ -159,14 +159,26 @@ export async function searchCatalog(query: string) {
   await requireUser();
   const supabase = await createClient();
   const q = query.trim();
+
+  // Búsqueda insensible a acentos vía RPC (migración 0007).
+  const { data, error } = await supabase.rpc("search_medication_catalog", { q });
+  if (!error && data) {
+    return data.map((d) => ({
+      id: d.id,
+      name: d.name,
+      default_unit: d.default_unit,
+    }));
+  }
+
+  // Fallback si la función aún no existe en la BD (sensible a acentos).
   let builder = supabase
     .from("medication_catalog")
     .select("id, name, default_unit")
     .order("name", { ascending: true })
-    .limit(20);
+    .limit(30);
   if (q) builder = builder.ilike("name", `%${q}%`);
-  const { data } = await builder;
-  return data ?? [];
+  const { data: rows } = await builder;
+  return rows ?? [];
 }
 
 export async function createCatalogEntry(name: string, unit: string | null) {
