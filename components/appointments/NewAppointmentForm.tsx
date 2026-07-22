@@ -6,7 +6,7 @@ import { Button } from "@/components/ui/Button";
 import { Card } from "@/components/ui/Card";
 import { createAppointment } from "@/app/(app)/actions/appointments";
 
-const field = "min-h-touch w-full rounded-xl border border-gray-300 px-4 text-base";
+const field = "min-h-touch w-full rounded-xl border border-line px-4 text-base";
 
 export function NewAppointmentForm() {
   const router = useRouter();
@@ -61,7 +61,7 @@ export function NewAppointmentForm() {
           className={field}
         />
         <div>
-          <label className="text-sm text-gray-600">Fecha y hora</label>
+          <label className="text-sm text-muted">Fecha y hora</label>
           <input
             type="datetime-local"
             value={scheduledAt}
@@ -107,7 +107,7 @@ export function NewAppointmentForm() {
           onChange={(e) => setNotes(e.target.value)}
           placeholder="Notas (opcional)"
           rows={2}
-          className="w-full rounded-xl border border-gray-300 p-3 text-base"
+          className="w-full rounded-xl border border-line p-3 text-base"
         />
       </Card>
 

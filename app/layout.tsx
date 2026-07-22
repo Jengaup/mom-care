@@ -1,6 +1,19 @@
 import type { Metadata, Viewport } from "next";
+import { Figtree, Fraunces } from "next/font/google";
 import "./globals.css";
 import { RegisterSW } from "@/components/pwa/RegisterSW";
+
+const figtree = Figtree({
+  subsets: ["latin"],
+  variable: "--font-figtree",
+  display: "swap",
+});
+const fraunces = Fraunces({
+  subsets: ["latin"],
+  variable: "--font-fraunces",
+  display: "swap",
+  weight: ["400", "500", "600", "700"],
+});
 
 export const metadata: Metadata = {
   title: "mom-care",
@@ -30,7 +43,7 @@ export default function RootLayout({
   children: React.ReactNode;
 }) {
   return (
-    <html lang="es">
+    <html lang="es" className={`${figtree.variable} ${fraunces.variable}`}>
       <body>
         {children}
         <RegisterSW />

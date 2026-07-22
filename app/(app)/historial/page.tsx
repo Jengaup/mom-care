@@ -24,7 +24,7 @@ const TASK_STATE: Record<string, OccurrenceState> = {
 type SP = Record<string, string | undefined>;
 
 const selectCls =
-  "min-h-touch w-full rounded-xl border border-gray-300 px-3 text-base bg-white";
+  "min-h-touch w-full rounded-xl border border-line px-3 text-base bg-white";
 
 export default async function HistorialPage({
   searchParams,
@@ -164,7 +164,7 @@ export default async function HistorialPage({
 
   return (
     <div className="space-y-4">
-      <h1 className="text-2xl font-bold text-gray-900">Historial</h1>
+      <h1 className="font-display text-2xl font-semibold text-ink">Historial</h1>
 
       <form method="get" className="space-y-2">
         <div className="grid grid-cols-2 gap-2">
@@ -237,7 +237,7 @@ export default async function HistorialPage({
         </div>
         <button
           type="submit"
-          className="min-h-touch w-full rounded-xl bg-status-done font-semibold text-white"
+          className="min-h-touch w-full rounded-xl bg-brand font-semibold text-white"
         >
           Filtrar
         </button>
@@ -246,12 +246,12 @@ export default async function HistorialPage({
       {rows.length === 0 ? (
         <EmptyState title="No hay registros con estos filtros" />
       ) : (
-        <Card className="divide-y divide-gray-100 p-0">
+        <Card className="divide-y divide-line p-0">
           {rows.map((r) => (
             <div key={r.id} className="flex items-center justify-between gap-2 p-3">
               <div className="min-w-0">
-                <p className="truncate text-base text-gray-900">{r.label}</p>
-                <p className="text-sm text-gray-500">
+                <p className="truncate text-base text-ink">{r.label}</p>
+                <p className="text-sm text-muted">
                   {r.when} · {r.who}
                 </p>
               </div>
@@ -270,7 +270,7 @@ export default async function HistorialPage({
           ) : (
             <span />
           )}
-          <span className="text-sm text-gray-500">
+          <span className="text-sm text-muted">
             Página {page} de {totalPages}
           </span>
           {page < totalPages ? (

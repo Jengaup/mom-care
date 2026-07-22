@@ -13,7 +13,7 @@ export default async function NuevaTareaPage() {
         <Link href="/tareas" className="text-2xl" aria-label="Volver">
           ‹
         </Link>
-        <h1 className="text-2xl font-bold text-gray-900">Nueva tarea</h1>
+        <h1 className="font-display text-2xl font-semibold text-ink">Nueva tarea</h1>
       </header>
       <NewTaskForm />
     </div>

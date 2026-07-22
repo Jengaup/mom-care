@@ -21,11 +21,11 @@ export default async function TareasPage() {
   return (
     <div className="space-y-4">
       <header className="flex items-center justify-between">
-        <h1 className="text-2xl font-bold text-gray-900">Tareas</h1>
+        <h1 className="font-display text-2xl font-semibold text-ink">Tareas</h1>
         {user?.role === "admin" ? (
           <Link
             href="/tareas/nuevo"
-            className="min-h-touch inline-flex items-center rounded-xl bg-status-done px-4 font-semibold text-white"
+            className="min-h-touch inline-flex items-center rounded-xl bg-brand px-4 font-semibold text-white"
           >
             + Nuevo
           </Link>

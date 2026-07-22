@@ -31,7 +31,7 @@ function Section({
 }) {
   return (
     <section className="mt-5">
-      <h2 className="mb-2 border-b border-gray-300 pb-1 text-lg font-bold text-gray-900">
+      <h2 className="mb-2 border-b border-line pb-1 text-lg font-bold text-ink">
         {title}
       </h2>
       {children}
@@ -182,29 +182,29 @@ export default async function ReportePage({
   return (
     <div className="space-y-4">
       <div className="no-print space-y-3">
-        <h1 className="text-2xl font-bold text-gray-900">Reporte del paciente</h1>
+        <h1 className="font-display text-2xl font-semibold text-ink">Reporte del paciente</h1>
         <form method="get" className="grid grid-cols-2 gap-2">
           <div>
-            <label className="text-sm text-gray-600">Desde</label>
+            <label className="text-sm text-muted">Desde</label>
             <input
               type="date"
               name="from"
               defaultValue={fromStr}
-              className="min-h-touch w-full rounded-xl border border-gray-300 px-3 text-base"
+              className="min-h-touch w-full rounded-xl border border-line px-3 text-base"
             />
           </div>
           <div>
-            <label className="text-sm text-gray-600">Hasta</label>
+            <label className="text-sm text-muted">Hasta</label>
             <input
               type="date"
               name="to"
               defaultValue={toStr}
-              className="min-h-touch w-full rounded-xl border border-gray-300 px-3 text-base"
+              className="min-h-touch w-full rounded-xl border border-line px-3 text-base"
             />
           </div>
           <button
             type="submit"
-            className="col-span-2 min-h-touch rounded-xl border border-gray-300 font-semibold text-gray-700"
+            className="col-span-2 min-h-touch rounded-xl border border-line font-semibold text-ink/80"
           >
             Actualizar rango
           </button>
@@ -213,10 +213,10 @@ export default async function ReportePage({
       </div>
 
       {/* Documento imprimible */}
-      <article className="rounded-2xl border border-gray-200 bg-white p-5 text-sm text-gray-800 print:border-0 print:p-0">
+      <article className="rounded-2xl border border-line bg-white p-5 text-sm text-ink print:border-0 print:p-0">
         <header>
-          <h2 className="text-xl font-bold text-gray-900">{patient.full_name}</h2>
-          <p className="text-gray-600">
+          <h2 className="text-xl font-bold text-ink">{patient.full_name}</h2>
+          <p className="text-muted">
             {patient.birth_date
               ? `${formatApp(`${patient.birth_date}T12:00:00`, "d 'de' MMMM yyyy")}${
                   age != null ? ` · ${age} años` : ""
@@ -224,9 +224,9 @@ export default async function ReportePage({
               : "Sin fecha de nacimiento"}
           </p>
           {patient.notes ? (
-            <p className="mt-1 text-gray-600">{patient.notes}</p>
+            <p className="mt-1 text-muted">{patient.notes}</p>
           ) : null}
-          <p className="mt-2 text-gray-500">
+          <p className="mt-2 text-muted">
             Período: {formatApp(`${fromStr}T12:00:00`, "d MMM yyyy")} –{" "}
             {formatApp(`${toStr}T12:00:00`, "d MMM yyyy")} · Generado el{" "}
             {formatApp(new Date().toISOString(), "d MMM yyyy, h:mm a")}
@@ -235,11 +235,11 @@ export default async function ReportePage({
 
         <Section title="Medicamentos activos">
           {medList.length === 0 ? (
-            <p className="text-gray-500">Sin medicamentos activos.</p>
+            <p className="text-muted">Sin medicamentos activos.</p>
           ) : (
             <table className="w-full border-collapse">
               <thead>
-                <tr className="border-b border-gray-300 text-gray-500">
+                <tr className="border-b border-line text-muted">
                   <th className={cell}>Medicamento</th>
                   <th className={cell}>Dosis</th>
                   <th className={cell}>Frecuencia</th>
@@ -251,7 +251,7 @@ export default async function ReportePage({
                 {medList.map((m) => {
                   const a = adherence.get(m.id);
                   return (
-                    <tr key={m.id} className="border-b border-gray-100">
+                    <tr key={m.id} className="border-b border-line">
                       <td className={cell}>{m.name}</td>
                       <td className={cell}>
                         {m.dose != null ? `${m.dose} ${m.unit ?? ""}` : "—"}
@@ -271,11 +271,11 @@ export default async function ReportePage({
 
         <Section title="Registro de medicamentos">
           {logs.length === 0 ? (
-            <p className="text-gray-500">Sin registros en este período.</p>
+            <p className="text-muted">Sin registros en este período.</p>
           ) : (
             <table className="w-full border-collapse">
               <thead>
-                <tr className="border-b border-gray-300 text-gray-500">
+                <tr className="border-b border-line text-muted">
                   <th className={cell}>Fecha y hora</th>
                   <th className={cell}>Medicamento</th>
                   <th className={cell}>Estado</th>
@@ -284,7 +284,7 @@ export default async function ReportePage({
               </thead>
               <tbody>
                 {logs.map((l, i) => (
-                  <tr key={i} className="border-b border-gray-100">
+                  <tr key={i} className="border-b border-line">
                     <td className={cell}>
                       {formatApp(
                         l.administered_at ?? l.scheduled_for ?? l.created_at,
@@ -307,11 +307,11 @@ export default async function ReportePage({
 
         <Section title="Tareas">
           {(taskRows ?? []).length === 0 ? (
-            <p className="text-gray-500">Sin tareas.</p>
+            <p className="text-muted">Sin tareas.</p>
           ) : (
             <table className="w-full border-collapse">
               <thead>
-                <tr className="border-b border-gray-300 text-gray-500">
+                <tr className="border-b border-line text-muted">
                   <th className={cell}>Tarea</th>
                   <th className={cell}>Hechas</th>
                   <th className={cell}>Omitidas</th>
@@ -321,7 +321,7 @@ export default async function ReportePage({
                 {(taskRows ?? []).map((t) => {
                   const a = taskAdh.get(t.id);
                   return (
-                    <tr key={t.id} className="border-b border-gray-100">
+                    <tr key={t.id} className="border-b border-line">
                       <td className={cell}>{taskById.get(t.id)}</td>
                       <td className={cell}>{a?.done ?? 0}</td>
                       <td className={cell}>{a?.skipped ?? 0}</td>
@@ -335,11 +335,11 @@ export default async function ReportePage({
 
         <Section title="Citas">
           {(appts ?? []).length === 0 ? (
-            <p className="text-gray-500">Sin citas en este período.</p>
+            <p className="text-muted">Sin citas en este período.</p>
           ) : (
             <table className="w-full border-collapse">
               <thead>
-                <tr className="border-b border-gray-300 text-gray-500">
+                <tr className="border-b border-line text-muted">
                   <th className={cell}>Fecha</th>
                   <th className={cell}>Cita</th>
                   <th className={cell}>Doctor</th>
@@ -348,7 +348,7 @@ export default async function ReportePage({
               </thead>
               <tbody>
                 {(appts ?? []).map((a, i) => (
-                  <tr key={i} className="border-b border-gray-100">
+                  <tr key={i} className="border-b border-line">
                     <td className={cell}>
                       {formatApp(a.scheduled_at, "d MMM, h:mm a")}
                     </td>
@@ -364,19 +364,19 @@ export default async function ReportePage({
 
         <Section title="Notas diarias">
           {(notes ?? []).length === 0 ? (
-            <p className="text-gray-500">Sin notas en este período.</p>
+            <p className="text-muted">Sin notas en este período.</p>
           ) : (
             <ul className="space-y-2">
               {(notes ?? []).map((n, i) => (
-                <li key={i} className="border-b border-gray-100 pb-2">
-                  <p className="font-semibold text-gray-700">
+                <li key={i} className="border-b border-line pb-2">
+                  <p className="font-semibold text-ink/80">
                     {formatApp(`${n.note_date}T12:00:00`, "d MMM yyyy")}
                     {" · "}
-                    <span className="font-normal text-gray-500">
+                    <span className="font-normal text-muted">
                       {n.author_id ? nameById.get(n.author_id) ?? "—" : "—"}
                     </span>
                   </p>
-                  <p className="whitespace-pre-wrap text-gray-800">{n.content}</p>
+                  <p className="whitespace-pre-wrap text-ink">{n.content}</p>
                 </li>
               ))}
             </ul>

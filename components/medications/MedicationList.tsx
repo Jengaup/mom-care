@@ -8,7 +8,7 @@ import { Sheet } from "@/components/ui/Sheet";
 import { StatusBadge } from "@/components/ui/Badge";
 import { EmptyState } from "@/components/ui/EmptyState";
 import { formatTime } from "@/lib/time";
-import type { OccurrenceState } from "@/lib/status";
+import { stateColor, type OccurrenceState } from "@/lib/status";
 import {
   recordDose,
   recordPrn,
@@ -220,25 +220,29 @@ export function MedicationList({
         ) : (
           groups.map((group) => (
             <div key={group.timeLabel} className="space-y-2">
-              <h2 className="px-1 text-sm font-bold uppercase tracking-wide text-gray-500">
+              <h2 className="px-1 text-sm font-bold uppercase tracking-wide text-muted">
                 {group.timeLabel}
               </h2>
               {group.items.map((o) => {
                 const s = stateOf(o);
                 const resolved = s === "given" || s === "skipped" || s === "postponed";
                 return (
-                  <Card key={o.key} className="flex items-center gap-3">
+                  <Card
+                    key={o.key}
+                    accent={stateColor(s)}
+                    className="flex items-center gap-3"
+                  >
                     <div className="min-w-0 flex-1">
-                      <p className="truncate text-base font-semibold text-gray-900">
+                      <p className="truncate text-base font-semibold text-ink">
                         {o.name}{" "}
-                        <span className="font-normal text-gray-500">
+                        <span className="font-normal text-muted">
                           {doseLabel(o.dose, o.unit)}
                         </span>
                       </p>
                       <div className="mt-1 flex flex-wrap items-center gap-2">
                         <StatusBadge state={s} />
                         {msg[o.key] ? (
-                          <span className="text-sm text-gray-500">{msg[o.key]}</span>
+                          <span className="text-sm text-muted">{msg[o.key]}</span>
                         ) : null}
                       </div>
                     </div>
@@ -276,7 +280,7 @@ export function MedicationList({
       {/* Según necesidad (PRN) */}
       {hidePrn ? null : (
       <section className="space-y-2">
-        <h2 className="px-1 text-sm font-bold uppercase tracking-wide text-gray-500">
+        <h2 className="px-1 text-sm font-bold uppercase tracking-wide text-muted">
           Según necesidad (PRN)
         </h2>
         {prn.length === 0 ? (
@@ -285,20 +289,20 @@ export function MedicationList({
           prn.map((p) => (
             <Card key={p.medicationId} className="flex items-center gap-3">
               <div className="min-w-0 flex-1">
-                <p className="truncate text-base font-semibold text-gray-900">
+                <p className="truncate text-base font-semibold text-ink">
                   {p.name}{" "}
-                  <span className="font-normal text-gray-500">
+                  <span className="font-normal text-muted">
                     {doseLabel(p.dose, p.unit)}
                   </span>
                 </p>
-                <p className="mt-0.5 text-sm text-gray-500">
+                <p className="mt-0.5 text-sm text-muted">
                   {p.reason ? `Para ${p.reason}. ` : ""}
                   {p.lastDoseISO
                     ? `Última dosis: ${formatTime(p.lastDoseISO)} (${p.dosesToday} hoy)`
                     : "Sin dosis hoy"}
                 </p>
                 {prnMsg[p.medicationId] ? (
-                  <p className="mt-1 text-sm text-gray-500">
+                  <p className="mt-1 text-sm text-muted">
                     {prnMsg[p.medicationId]}
                   </p>
                 ) : null}
@@ -330,7 +334,7 @@ export function MedicationList({
               onChange={(e) => setNote(e.target.value)}
               placeholder="Nota (opcional)"
               rows={2}
-              className="w-full rounded-xl border border-gray-300 p-3 text-base"
+              className="w-full rounded-xl border border-line p-3 text-base"
             />
             <div className="grid grid-cols-2 gap-2">
               <Button variant="secondary" onClick={() => postpone(sheetFor, 1)}>
@@ -359,7 +363,7 @@ export function MedicationList({
       >
         {prnConfirm ? (
           <div className="space-y-4">
-            <p className="text-base text-gray-700">
+            <p className="text-base text-ink/80">
               La última dosis de <strong>{prnConfirm.p.name}</strong> fue a las{" "}
               <strong>{formatTime(prnConfirm.lastAt)}</strong>
               {prnConfirm.lastByName ? ` por ${prnConfirm.lastByName}` : ""}. El

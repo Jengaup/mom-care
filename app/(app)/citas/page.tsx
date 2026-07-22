@@ -12,22 +12,22 @@ export const dynamic = "force-dynamic";
 function AppointmentRow({ appt }: { appt: Tables<"appointments"> }) {
   return (
     <Link href={`/citas/${appt.id}`}>
-      <Card className="active:bg-gray-50">
+      <Card className="active:bg-black/[0.03]">
         <div className="flex items-center justify-between gap-3">
           <div className="min-w-0">
-            <p className="truncate text-base font-semibold text-gray-900">
+            <p className="truncate text-base font-semibold text-ink">
               {appt.title}
             </p>
-            <p className="truncate text-sm text-gray-500">
+            <p className="truncate text-sm text-muted">
               {appt.doctor_name ?? ""}
               {appt.specialty ? ` · ${appt.specialty}` : ""}
             </p>
           </div>
           <div className="shrink-0 text-right">
-            <p className="text-sm font-medium text-gray-700">
+            <p className="text-sm font-medium text-ink/80">
               {formatApp(appt.scheduled_at, "d MMM")}
             </p>
-            <p className="text-sm text-gray-500">
+            <p className="text-sm text-muted">
               {formatApp(appt.scheduled_at, "h:mm a")}
             </p>
           </div>
@@ -69,11 +69,11 @@ export default async function CitasPage() {
   return (
     <div className="space-y-6">
       <header className="flex items-center justify-between">
-        <h1 className="text-2xl font-bold text-gray-900">Citas</h1>
+        <h1 className="font-display text-2xl font-semibold text-ink">Citas</h1>
         {user?.role === "admin" ? (
           <Link
             href="/citas/nueva"
-            className="min-h-touch inline-flex items-center rounded-xl bg-status-done px-4 font-semibold text-white"
+            className="min-h-touch inline-flex items-center rounded-xl bg-brand px-4 font-semibold text-white"
           >
             + Nuevo
           </Link>
@@ -81,7 +81,7 @@ export default async function CitasPage() {
       </header>
 
       <section className="space-y-2">
-        <h2 className="px-1 text-sm font-bold uppercase tracking-wide text-gray-500">
+        <h2 className="px-1 text-sm font-bold uppercase tracking-wide text-muted">
           Próximas
         </h2>
         {upcomingList.length === 0 ? (
@@ -93,7 +93,7 @@ export default async function CitasPage() {
 
       {pastList.length > 0 ? (
         <details className="group">
-          <summary className="min-h-touch flex cursor-pointer items-center px-1 text-sm font-bold uppercase tracking-wide text-gray-500">
+          <summary className="min-h-touch flex cursor-pointer items-center px-1 text-sm font-bold uppercase tracking-wide text-muted">
             Pasadas ({pastList.length})
           </summary>
           <div className="mt-2 space-y-2">

@@ -48,7 +48,7 @@ export default async function CitaDetallePage({
         <Link href="/citas" className="text-2xl" aria-label="Volver">
           ‹
         </Link>
-        <h1 className="truncate text-2xl font-bold text-gray-900">
+        <h1 className="truncate font-display text-2xl font-semibold text-ink">
           {appt.title}
         </h1>
       </header>
@@ -57,18 +57,18 @@ export default async function CitaDetallePage({
         <p className="text-sm font-semibold uppercase tracking-wide text-status-pending">
           {STATUS_LABEL[appt.status] ?? appt.status}
         </p>
-        <p className="text-lg font-medium text-gray-900">
+        <p className="text-lg font-medium text-ink">
           {formatApp(appt.scheduled_at, "EEEE d 'de' MMMM, h:mm a")}
         </p>
         {appt.doctor_name ? (
-          <p className="text-gray-700">
+          <p className="text-ink/80">
             {appt.doctor_name}
             {appt.specialty ? ` · ${appt.specialty}` : ""}
           </p>
         ) : null}
-        {appt.clinic ? <p className="text-gray-600">{appt.clinic}</p> : null}
-        {appt.address ? <p className="text-gray-600">{appt.address}</p> : null}
-        {appt.notes ? <p className="text-gray-600">{appt.notes}</p> : null}
+        {appt.clinic ? <p className="text-muted">{appt.clinic}</p> : null}
+        {appt.address ? <p className="text-muted">{appt.address}</p> : null}
+        {appt.notes ? <p className="text-muted">{appt.notes}</p> : null}
       </Card>
 
       <div className="grid grid-cols-2 gap-2">
@@ -91,22 +91,22 @@ export default async function CitaDetallePage({
       {/* Notas de la cita */}
       {notes && notes.length > 0 ? (
         <Card className="space-y-2">
-          <h2 className="text-lg font-bold text-gray-900">Notas</h2>
+          <h2 className="text-lg font-bold text-ink">Notas</h2>
           {notes.map((n) => (
-            <div key={n.id} className="space-y-1 border-t border-gray-100 pt-2 first:border-0 first:pt-0">
-              {n.summary ? <p className="text-gray-800">{n.summary}</p> : null}
+            <div key={n.id} className="space-y-1 border-t border-line pt-2 first:border-0 first:pt-0">
+              {n.summary ? <p className="text-ink">{n.summary}</p> : null}
               {n.next_steps ? (
-                <p className="text-sm text-gray-600">
+                <p className="text-sm text-muted">
                   <strong>Próximos pasos:</strong> {n.next_steps}
                 </p>
               ) : null}
               {n.medication_changes ? (
-                <p className="text-sm text-gray-600">
+                <p className="text-sm text-muted">
                   <strong>Medicamentos:</strong> {n.medication_changes}
                 </p>
               ) : null}
               {n.next_appointment_at ? (
-                <p className="text-sm text-gray-600">
+                <p className="text-sm text-muted">
                   <strong>Próxima cita:</strong>{" "}
                   {formatApp(n.next_appointment_at, "d MMM yyyy, h:mm a")}
                 </p>

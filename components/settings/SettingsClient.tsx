@@ -13,7 +13,7 @@ import {
 
 type Caregiver = { id: string; full_name: string | null; role: "admin" | "caregiver" };
 
-const field = "min-h-touch w-full rounded-xl border border-gray-300 px-4 text-base";
+const field = "min-h-touch w-full rounded-xl border border-line px-4 text-base";
 
 export function SettingsClient({
   me,
@@ -102,7 +102,7 @@ export function SettingsClient({
         <div className="flex items-center gap-3">
           <Button onClick={saveProfile}>Guardar</Button>
           {profileMsg ? (
-            <span className="text-sm text-gray-500">{profileMsg}</span>
+            <span className="text-sm text-muted">{profileMsg}</span>
           ) : null}
         </div>
       </Card>
@@ -111,7 +111,7 @@ export function SettingsClient({
       {isAdmin ? (
         <Card className="space-y-3">
           <CardTitle>Ventana de gracia</CardTitle>
-          <p className="text-sm text-gray-500">
+          <p className="text-sm text-muted">
             Minutos tras la hora antes de marcar una dosis como atrasada.
           </p>
           <div className="flex items-center gap-2">
@@ -121,11 +121,11 @@ export function SettingsClient({
               inputMode="numeric"
               className={`${field} max-w-28`}
             />
-            <span className="text-gray-500">min</span>
+            <span className="text-muted">min</span>
             <Button onClick={saveGrace}>Guardar</Button>
           </div>
           {graceMsg ? (
-            <span className="text-sm text-gray-500">{graceMsg}</span>
+            <span className="text-sm text-muted">{graceMsg}</span>
           ) : null}
         </Card>
       ) : null}
@@ -133,10 +133,10 @@ export function SettingsClient({
       {/* Cuidadores */}
       <Card className="space-y-3">
         <CardTitle>Cuidadores</CardTitle>
-        <ul className="divide-y divide-gray-100">
+        <ul className="divide-y divide-line">
           {caregivers.map((c) => (
             <li key={c.id} className="flex items-center justify-between py-2">
-              <span className="text-base text-gray-800">
+              <span className="text-base text-ink">
                 {c.full_name ?? "—"}
                 {c.id === me.id ? " (tú)" : ""}
               </span>
@@ -146,13 +146,13 @@ export function SettingsClient({
                   onChange={(e) =>
                     changeRole(c.id, e.target.value as "admin" | "caregiver")
                   }
-                  className="min-h-touch rounded-xl border border-gray-300 px-2 text-sm"
+                  className="min-h-touch rounded-xl border border-line px-2 text-sm"
                 >
                   <option value="caregiver">Cuidador</option>
                   <option value="admin">Admin</option>
                 </select>
               ) : (
-                <span className="text-sm text-gray-400">
+                <span className="text-sm text-muted">
                   {c.role === "admin" ? "Admin" : "Cuidador"}
                 </span>
               )}
@@ -161,8 +161,8 @@ export function SettingsClient({
         </ul>
 
         {isAdmin ? (
-          <div className="space-y-2 border-t border-gray-100 pt-3">
-            <p className="text-sm font-medium text-gray-700">
+          <div className="space-y-2 border-t border-line pt-3">
+            <p className="text-sm font-medium text-ink/80">
               Invitar cuidador
             </p>
             <div className="flex gap-2">
@@ -178,7 +178,7 @@ export function SettingsClient({
               </Button>
             </div>
             {inviteMsg ? (
-              <span className="text-sm text-gray-500">{inviteMsg}</span>
+              <span className="text-sm text-muted">{inviteMsg}</span>
             ) : null}
           </div>
         ) : null}

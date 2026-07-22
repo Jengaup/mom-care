@@ -13,7 +13,7 @@ export default async function NuevaCitaPage() {
         <Link href="/citas" className="text-2xl" aria-label="Volver">
           ‹
         </Link>
-        <h1 className="text-2xl font-bold text-gray-900">Nueva cita</h1>
+        <h1 className="font-display text-2xl font-semibold text-ink">Nueva cita</h1>
       </header>
       <NewAppointmentForm />
     </div>

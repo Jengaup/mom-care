@@ -88,10 +88,10 @@ export default async function DashboardPage() {
   return (
     <div className="space-y-5">
       <header>
-        <p className="text-sm text-gray-500">
+        <p className="text-sm text-muted">
           {formatApp(`${today}T12:00:00`, "EEEE, d 'de' MMMM")}
         </p>
-        <h1 className="text-2xl font-bold text-gray-900">
+        <h1 className="font-display text-2xl font-semibold text-ink">
           Hola{user?.fullName ? `, ${user.fullName.split(" ")[0]}` : ""}
         </h1>
       </header>
@@ -120,7 +120,7 @@ export default async function DashboardPage() {
       {/* (b) Medicamentos pendientes (más tarde hoy) */}
       <section className="space-y-2">
         <div className="flex items-center justify-between">
-          <h2 className="text-lg font-bold text-gray-900">
+          <h2 className="text-lg font-bold text-ink">
             Medicamentos pendientes
           </h2>
           <Link href="/medicamentos" className="text-sm text-status-done">
@@ -130,17 +130,17 @@ export default async function DashboardPage() {
         {pendingMeds.length === 0 ? (
           <EmptyState title="Sin medicamentos pendientes más tarde" />
         ) : (
-          <Card className="divide-y divide-gray-100 p-0">
+          <Card className="divide-y divide-line p-0">
             {pendingMeds.map((o) => (
               <div
                 key={`${o.medicationId}|${o.scheduledFor.toISOString()}`}
                 className="flex items-center justify-between p-3"
               >
-                <span className="truncate text-base text-gray-800">
+                <span className="truncate text-base text-ink">
                   {o.name}
                   {o.dose != null ? ` ${o.dose}${o.unit ? ` ${o.unit}` : ""}` : ""}
                 </span>
-                <span className="shrink-0 text-sm font-medium text-gray-500">
+                <span className="shrink-0 text-sm font-medium text-muted">
                   {formatTime(o.scheduledFor)}
                 </span>
               </div>
@@ -152,7 +152,7 @@ export default async function DashboardPage() {
       {/* (c) Tareas pendientes */}
       <section className="space-y-2">
         <div className="flex items-center justify-between">
-          <h2 className="text-lg font-bold text-gray-900">Tareas pendientes</h2>
+          <h2 className="text-lg font-bold text-ink">Tareas pendientes</h2>
           <Link href="/tareas" className="text-sm text-status-done">
             Ver todas
           </Link>
@@ -160,16 +160,16 @@ export default async function DashboardPage() {
         {pendingTasks.length === 0 ? (
           <EmptyState title="Sin tareas pendientes más tarde" />
         ) : (
-          <Card className="divide-y divide-gray-100 p-0">
+          <Card className="divide-y divide-line p-0">
             {pendingTasks.map((o) => (
               <div
                 key={`${o.taskId}|${o.scheduledFor.toISOString()}`}
                 className="flex items-center justify-between p-3"
               >
-                <span className="truncate text-base text-gray-800">
+                <span className="truncate text-base text-ink">
                   {o.title}
                 </span>
-                <span className="shrink-0 text-sm font-medium text-gray-500">
+                <span className="shrink-0 text-sm font-medium text-muted">
                   {formatTime(o.scheduledFor)}
                 </span>
               </div>
@@ -180,14 +180,14 @@ export default async function DashboardPage() {
 
       {/* (d) Próxima cita */}
       <section className="space-y-2">
-        <h2 className="text-lg font-bold text-gray-900">Próxima cita</h2>
+        <h2 className="text-lg font-bold text-ink">Próxima cita</h2>
         {nextAppt ? (
           <Link href={`/citas/${nextAppt.id}`}>
-            <Card className="active:bg-gray-50">
-              <p className="text-base font-semibold text-gray-900">
+            <Card className="active:bg-black/[0.03]">
+              <p className="text-base font-semibold text-ink">
                 {nextAppt.title}
               </p>
-              <p className="text-sm text-gray-500">
+              <p className="text-sm text-muted">
                 {formatApp(nextAppt.scheduled_at, "EEEE d MMM, h:mm a")}
                 {nextAppt.doctor_name ? ` · ${nextAppt.doctor_name}` : ""}
               </p>
@@ -201,18 +201,18 @@ export default async function DashboardPage() {
       {/* (e) Nota del día */}
       <section className="space-y-2">
         <div className="flex items-center justify-between">
-          <h2 className="text-lg font-bold text-gray-900">Nota de hoy</h2>
+          <h2 className="text-lg font-bold text-ink">Nota de hoy</h2>
           <Link href="/notas" className="text-sm text-status-done">
             {todayNote?.content ? "Editar" : "Añadir"}
           </Link>
         </div>
         <Card>
           {todayNote?.content ? (
-            <p className="whitespace-pre-wrap text-gray-800">
+            <p className="whitespace-pre-wrap text-ink">
               {todayNote.content}
             </p>
           ) : (
-            <p className="text-gray-400">Aún no has escrito la nota de hoy.</p>
+            <p className="text-muted">Aún no has escrito la nota de hoy.</p>
           )}
         </Card>
       </section>
@@ -220,7 +220,7 @@ export default async function DashboardPage() {
       {/* (f) Actividad reciente */}
       <section className="space-y-2">
         <div className="flex items-center justify-between">
-          <h2 className="text-lg font-bold text-gray-900">Actividad reciente</h2>
+          <h2 className="text-lg font-bold text-ink">Actividad reciente</h2>
           <div className="flex gap-3">
             <Link href="/reporte" className="text-sm text-status-done">
               Reporte

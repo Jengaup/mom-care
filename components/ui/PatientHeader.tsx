@@ -17,9 +17,21 @@ export function PatientHeader({
   }
 
   return (
-    <header className="sticky top-0 z-30 border-b border-gray-200 bg-white/95 px-4 py-2 backdrop-blur">
-      <p className="truncate text-base font-semibold text-gray-900">{name}</p>
-      {sub ? <p className="text-sm text-gray-500">{sub}</p> : null}
+    <header className="sticky top-0 z-30 border-b border-line bg-bg/85 px-4 py-2.5 backdrop-blur">
+      <div className="flex items-center gap-3">
+        <span
+          className="flex h-9 w-9 shrink-0 items-center justify-center rounded-full bg-brand-soft font-display text-lg font-semibold text-brand-dark"
+          aria-hidden
+        >
+          {name.trim().charAt(0).toUpperCase()}
+        </span>
+        <div className="min-w-0">
+          <p className="truncate font-display text-lg font-semibold leading-tight text-ink">
+            {name}
+          </p>
+          {sub ? <p className="text-sm text-muted">{sub}</p> : null}
+        </div>
+      </div>
     </header>
   );
 }

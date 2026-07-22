@@ -34,9 +34,11 @@ export function Sheet({
         role="dialog"
         aria-modal="true"
       >
-        <div className="mx-auto mb-3 h-1.5 w-12 rounded-full bg-gray-300" />
+        <div className="mx-auto mb-3 h-1.5 w-12 rounded-full bg-line" />
         {title ? (
-          <h3 className="mb-3 text-lg font-bold text-gray-900">{title}</h3>
+          <h3 className="mb-3 font-display text-xl font-semibold text-ink">
+            {title}
+          </h3>
         ) : null}
         {children}
       </div>

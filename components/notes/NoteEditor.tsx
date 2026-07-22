@@ -37,9 +37,9 @@ export function NoteEditor({ initial }: { initial: string }) {
         onBlur={save}
         rows={5}
         placeholder="¿Cómo estuvo el día? Sueño, apetito, ánimo, incidencias…"
-        className="w-full rounded-2xl border border-gray-300 p-4 text-base"
+        className="w-full rounded-2xl border border-line p-4 text-base"
       />
-      <p className="h-5 text-right text-sm text-gray-400">
+      <p className="h-5 text-right text-sm text-muted">
         {status === "saving"
           ? "Guardando…"
           : status === "saved"

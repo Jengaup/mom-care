@@ -46,13 +46,13 @@ export default async function ConfiguracionPage() {
 
   return (
     <div className="space-y-4">
-      <h1 className="text-2xl font-bold text-gray-900">Configuración</h1>
+      <h1 className="font-display text-2xl font-semibold text-ink">Configuración</h1>
       <a
         href="/reporte"
-        className="min-h-touch flex items-center justify-between rounded-2xl border border-gray-200 bg-white px-4 font-semibold text-gray-900"
+        className="min-h-touch flex items-center justify-between rounded-2xl border border-line bg-white px-4 font-semibold text-ink"
       >
         <span>📄 Reporte del paciente</span>
-        <span className="text-gray-400">›</span>
+        <span className="text-muted">›</span>
       </a>
       {patient ? (
         <PatientsCard
