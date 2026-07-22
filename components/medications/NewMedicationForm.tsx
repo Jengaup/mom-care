@@ -249,6 +249,36 @@ export function NewMedicationForm() {
 
           {scheduleType === "fixed" ? (
             <div className="space-y-2">
+              <div className="grid grid-cols-4 gap-1">
+                {(
+                  [
+                    ["1×/día", ["08:00"]],
+                    ["2×/día", ["08:00", "20:00"]],
+                    ["3×/día", ["08:00", "14:00", "20:00"]],
+                    ["4×/día", ["06:00", "12:00", "18:00", "22:00"]],
+                  ] as const
+                ).map(([label, preset]) => {
+                  const selected =
+                    JSON.stringify(fixedTimes) === JSON.stringify(preset);
+                  return (
+                    <button
+                      key={label}
+                      type="button"
+                      onClick={() => setFixedTimes([...preset])}
+                      className={`min-h-touch rounded-lg border text-sm font-semibold ${
+                        selected
+                          ? "border-status-done bg-green-50 text-status-done"
+                          : "border-gray-300 text-gray-600"
+                      }`}
+                    >
+                      {label}
+                    </button>
+                  );
+                })}
+              </div>
+              <p className="text-xs text-gray-400">
+                Elige una frecuencia o ajusta las horas manualmente.
+              </p>
               {fixedTimes.map((t, i) => (
                 <div key={i} className="flex gap-2">
                   <input
