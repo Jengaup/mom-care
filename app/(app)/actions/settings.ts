@@ -36,6 +36,23 @@ export async function updateMyProfile(input: {
   return { ok: true };
 }
 
+/** Cambia la contraseña del usuario autenticado. */
+export async function updatePassword(
+  newPassword: string,
+): Promise<{ ok: boolean; message?: string }> {
+  await requireUser();
+  if (newPassword.length < 8) {
+    return { ok: false, message: "La contraseña debe tener al menos 8 caracteres." };
+  }
+  const supabase = await createClient();
+  const { error } = await supabase.auth.updateUser({ password: newPassword });
+  if (error) {
+    // Supabase rechaza contraseñas iguales a la actual o muy comunes.
+    return { ok: false, message: "No se pudo cambiar la contraseña." };
+  }
+  return { ok: true };
+}
+
 export async function updateGraceMinutes(
   minutes: number,
 ): Promise<{ ok: boolean; message?: string; value?: number }> {

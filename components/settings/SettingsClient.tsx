@@ -6,6 +6,7 @@ import { Button } from "@/components/ui/Button";
 import { Card, CardTitle } from "@/components/ui/Card";
 import {
   updateMyProfile,
+  updatePassword,
   updateGraceMinutes,
   updateCaregiverRole,
   removeCaregiver,
@@ -35,6 +36,33 @@ export function SettingsClient({
   const [phone, setPhone] = useState(me.phone);
   const [profileMsg, setProfileMsg] = useState("");
   const [large, setLarge] = useState(textLarge);
+
+  const [pw1, setPw1] = useState("");
+  const [pw2, setPw2] = useState("");
+  const [pwMsg, setPwMsg] = useState("");
+  const [pwSaving, setPwSaving] = useState(false);
+
+  async function savePassword() {
+    setPwMsg("");
+    if (pw1.length < 8) {
+      setPwMsg("La contraseña debe tener al menos 8 caracteres.");
+      return;
+    }
+    if (pw1 !== pw2) {
+      setPwMsg("Las contraseñas no coinciden.");
+      return;
+    }
+    setPwSaving(true);
+    const res = await updatePassword(pw1);
+    setPwSaving(false);
+    if (res.ok) {
+      setPw1("");
+      setPw2("");
+      setPwMsg("Contraseña actualizada ✓");
+    } else {
+      setPwMsg(res.message ?? "Error");
+    }
+  }
 
   async function toggleTextSize(next: boolean) {
     setLarge(next);
@@ -129,6 +157,34 @@ export function SettingsClient({
             <span className="text-sm text-muted">{profileMsg}</span>
           ) : null}
         </div>
+      </Card>
+
+      {/* Cambiar contraseña (todos) */}
+      <Card className="space-y-3">
+        <CardTitle>Cambiar contraseña</CardTitle>
+        <input
+          type="password"
+          autoComplete="new-password"
+          value={pw1}
+          onChange={(e) => setPw1(e.target.value)}
+          placeholder="Nueva contraseña"
+          className={field}
+        />
+        <input
+          type="password"
+          autoComplete="new-password"
+          value={pw2}
+          onChange={(e) => setPw2(e.target.value)}
+          placeholder="Repite la nueva contraseña"
+          className={field}
+        />
+        <div className="flex items-center gap-3">
+          <Button onClick={savePassword} disabled={pwSaving || !pw1}>
+            {pwSaving ? "Guardando…" : "Cambiar contraseña"}
+          </Button>
+          {pwMsg ? <span className="text-sm text-muted">{pwMsg}</span> : null}
+        </div>
+        <p className="text-xs text-muted">Mínimo 8 caracteres.</p>
       </Card>
 
       {/* Tamaño de texto (todos) */}
