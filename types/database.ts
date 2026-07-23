@@ -46,6 +46,11 @@ export type Database = {
           birth_date: string | null;
           notes: string | null;
           grace_minutes: number;
+          blood_type: string | null;
+          allergies: string | null;
+          conditions: string | null;
+          insurance: string | null;
+          emergency_note: string | null;
           created_at: string;
         };
         Insert: {
@@ -54,6 +59,11 @@ export type Database = {
           birth_date?: string | null;
           notes?: string | null;
           grace_minutes?: number;
+          blood_type?: string | null;
+          allergies?: string | null;
+          conditions?: string | null;
+          insurance?: string | null;
+          emergency_note?: string | null;
           created_at?: string;
         };
         Update: {
@@ -62,6 +72,50 @@ export type Database = {
           birth_date?: string | null;
           notes?: string | null;
           grace_minutes?: number;
+          blood_type?: string | null;
+          allergies?: string | null;
+          conditions?: string | null;
+          insurance?: string | null;
+          emergency_note?: string | null;
+          created_at?: string;
+        };
+        Relationships: [];
+      };
+      contacts: {
+        Row: {
+          id: string;
+          patient_id: string;
+          name: string;
+          role: string | null;
+          phone: string | null;
+          note: string | null;
+          is_emergency: boolean;
+          sort_order: number;
+          created_by: string | null;
+          created_at: string;
+        };
+        Insert: {
+          id?: string;
+          patient_id: string;
+          name: string;
+          role?: string | null;
+          phone?: string | null;
+          note?: string | null;
+          is_emergency?: boolean;
+          sort_order?: number;
+          created_by?: string | null;
+          created_at?: string;
+        };
+        Update: {
+          id?: string;
+          patient_id?: string;
+          name?: string;
+          role?: string | null;
+          phone?: string | null;
+          note?: string | null;
+          is_emergency?: boolean;
+          sort_order?: number;
+          created_by?: string | null;
           created_at?: string;
         };
         Relationships: [];
