@@ -78,7 +78,7 @@ export default async function SignosPage() {
   return (
     <div className="space-y-4">
       <h1 className="font-display text-2xl font-semibold text-ink">Signos</h1>
-      <RecordObservation />
+      <RecordObservation patientId={patient.id} />
 
       {trends.length > 0 ? (
         <section className="space-y-3">
