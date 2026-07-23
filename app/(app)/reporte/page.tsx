@@ -2,8 +2,9 @@ import { differenceInYears, subDays } from "date-fns";
 import { getActivePatient } from "@/lib/patient";
 import { createClient } from "@/lib/supabase/server";
 import { dayRangeUtc, formatApp, todayInAppTz } from "@/lib/time";
+import { OBS_CONFIG, formatObsValue, type ObsType } from "@/lib/observations";
 import { EmptyState } from "@/components/ui/EmptyState";
-import { PrintButton } from "@/components/report/PrintButton";
+import { ReportActions } from "@/components/report/ReportActions";
 
 export const dynamic = "force-dynamic";
 
@@ -157,11 +158,70 @@ export default async function ReportePage({
     .lte("note_date", toStr)
     .order("note_date", { ascending: false });
 
+  // Contactos (todos, no dependen del período).
+  const { data: contacts } = await supabase
+    .from("contacts")
+    .select("name, role, phone, note, is_emergency")
+    .eq("patient_id", patient.id)
+    .order("is_emergency", { ascending: false })
+    .order("sort_order")
+    .order("name");
+  const contactList = contacts ?? [];
+
+  // Signos vitales del período.
+  const { data: obsRows } = await supabase
+    .from("observations")
+    .select("type, value_num, value_text, unit, note, measured_at, recorded_by")
+    .eq("patient_id", patient.id)
+    .gte("measured_at", start)
+    .lt("measured_at", end)
+    .order("measured_at", { ascending: false });
+  const obsList = obsRows ?? [];
+
+  // Resumen de signos por tipo (conteo, último, mín/máx en numéricos).
+  type ObsSummary = {
+    type: ObsType;
+    count: number;
+    latest: string;
+    latestAt: string;
+    min: number | null;
+    max: number | null;
+  };
+  const obsSummary: ObsSummary[] = [];
+  {
+    const byType = new Map<ObsType, typeof obsList>();
+    for (const o of obsList) {
+      const arr = byType.get(o.type as ObsType) ?? [];
+      arr.push(o);
+      byType.set(o.type as ObsType, arr);
+    }
+    for (const [type, arr] of byType) {
+      // arr viene desc por measured_at → el primero es el más reciente.
+      const cfg = OBS_CONFIG[type];
+      const nums =
+        cfg.kind === "text"
+          ? []
+          : arr
+              .map((o) => o.value_num)
+              .filter((v): v is number => v != null);
+      const first = arr[0]!;
+      obsSummary.push({
+        type,
+        count: arr.length,
+        latest: formatObsValue(type, first.value_num, first.value_text, first.unit),
+        latestAt: formatApp(first.measured_at, "d MMM, h:mm a"),
+        min: nums.length ? Math.min(...nums) : null,
+        max: nums.length ? Math.max(...nums) : null,
+      });
+    }
+  }
+
   // Nombres (recorded_by, author)
   const ids = Array.from(
     new Set([
       ...logs.map((l) => l.recorded_by),
       ...(notes ?? []).map((n) => n.author_id),
+      ...obsList.map((o) => o.recorded_by),
     ]),
   ).filter(Boolean) as string[];
   const nameById = new Map<string, string>();
@@ -176,6 +236,42 @@ export default async function ReportePage({
   const age = patient.birth_date
     ? differenceInYears(new Date(), new Date(`${patient.birth_date}T12:00:00`))
     : null;
+
+  // Resumen de texto plano para «Compartir».
+  const periodLabel = `${formatApp(`${fromStr}T12:00:00`, "d MMM yyyy")} – ${formatApp(
+    `${toStr}T12:00:00`,
+    "d MMM yyyy",
+  )}`;
+  const totGiven = logs.filter((l) => l.status === "given").length;
+  const totSkipped = logs.filter((l) => l.status === "skipped").length;
+  const emergencyContacts = contactList.filter((c) => c.is_emergency);
+  const shareLines: string[] = [
+    `Reporte de ${patient.full_name}${age != null ? ` (${age} años)` : ""}`,
+    `Período: ${periodLabel}`,
+    "",
+    `Medicamentos: ${totGiven} dados, ${totSkipped} omitidos.`,
+  ];
+  if (obsSummary.length) {
+    shareLines.push("", "Signos recientes:");
+    for (const s of obsSummary) {
+      shareLines.push(`• ${OBS_CONFIG[s.type].label}: ${s.latest} (${s.latestAt})`);
+    }
+  }
+  if (patient.allergies) shareLines.push("", `Alergias: ${patient.allergies}`);
+  if (emergencyContacts.length) {
+    shareLines.push("", "Emergencia:");
+    for (const c of emergencyContacts) {
+      shareLines.push(`• ${c.name}${c.phone ? ` — ${c.phone}` : ""}`);
+    }
+  }
+  const shareText = shareLines.join("\n");
+
+  const hasEmergencyInfo =
+    patient.blood_type ||
+    patient.allergies ||
+    patient.conditions ||
+    patient.insurance ||
+    patient.emergency_note;
 
   const cell = "px-2 py-1 text-left align-top";
 
@@ -209,7 +305,10 @@ export default async function ReportePage({
             Actualizar rango
           </button>
         </form>
-        <PrintButton />
+        <ReportActions
+          shareTitle={`Reporte de ${patient.full_name}`}
+          shareText={shareText}
+        />
       </div>
 
       {/* Documento imprimible */}
@@ -232,6 +331,74 @@ export default async function ReportePage({
             {formatApp(new Date().toISOString(), "d MMM yyyy, h:mm a")}
           </p>
         </header>
+
+        {hasEmergencyInfo ? (
+          <Section title="Información clave">
+            <table className="w-full border-collapse">
+              <tbody>
+                {patient.blood_type ? (
+                  <tr className="border-b border-line">
+                    <td className={`${cell} w-40 text-muted`}>Tipo de sangre</td>
+                    <td className={cell}>{patient.blood_type}</td>
+                  </tr>
+                ) : null}
+                {patient.allergies ? (
+                  <tr className="border-b border-line">
+                    <td className={`${cell} text-muted`}>Alergias</td>
+                    <td className={cell}>{patient.allergies}</td>
+                  </tr>
+                ) : null}
+                {patient.conditions ? (
+                  <tr className="border-b border-line">
+                    <td className={`${cell} text-muted`}>Condiciones</td>
+                    <td className={cell}>{patient.conditions}</td>
+                  </tr>
+                ) : null}
+                {patient.insurance ? (
+                  <tr className="border-b border-line">
+                    <td className={`${cell} text-muted`}>Seguro</td>
+                    <td className={cell}>{patient.insurance}</td>
+                  </tr>
+                ) : null}
+                {patient.emergency_note ? (
+                  <tr className="border-b border-line">
+                    <td className={`${cell} text-muted`}>Nota</td>
+                    <td className={cell}>{patient.emergency_note}</td>
+                  </tr>
+                ) : null}
+              </tbody>
+            </table>
+          </Section>
+        ) : null}
+
+        <Section title="Contactos">
+          {contactList.length === 0 ? (
+            <p className="text-muted">Sin contactos registrados.</p>
+          ) : (
+            <table className="w-full border-collapse">
+              <thead>
+                <tr className="border-b border-line text-muted">
+                  <th className={cell}>Nombre</th>
+                  <th className={cell}>Rol</th>
+                  <th className={cell}>Teléfono</th>
+                  <th className={cell}>Tipo</th>
+                </tr>
+              </thead>
+              <tbody>
+                {contactList.map((c, i) => (
+                  <tr key={i} className="border-b border-line">
+                    <td className={cell}>{c.name}</td>
+                    <td className={cell}>{c.role ?? "—"}</td>
+                    <td className={cell}>{c.phone ?? "—"}</td>
+                    <td className={cell}>
+                      {c.is_emergency ? "Emergencia" : "—"}
+                    </td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          )}
+        </Section>
 
         <Section title="Medicamentos activos">
           {medList.length === 0 ? (
@@ -302,6 +469,77 @@ export default async function ReportePage({
                 ))}
               </tbody>
             </table>
+          )}
+        </Section>
+
+        <Section title="Signos vitales">
+          {obsList.length === 0 ? (
+            <p className="text-muted">Sin signos registrados en este período.</p>
+          ) : (
+            <>
+              <table className="w-full border-collapse">
+                <thead>
+                  <tr className="border-b border-line text-muted">
+                    <th className={cell}>Signo</th>
+                    <th className={cell}>Último</th>
+                    <th className={cell}>Cuándo</th>
+                    <th className={cell}>Mín</th>
+                    <th className={cell}>Máx</th>
+                    <th className={cell}>Lecturas</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  {obsSummary.map((s) => (
+                    <tr key={s.type} className="border-b border-line">
+                      <td className={cell}>{OBS_CONFIG[s.type].label}</td>
+                      <td className={cell}>{s.latest}</td>
+                      <td className={cell}>{s.latestAt}</td>
+                      <td className={cell}>{s.min ?? "—"}</td>
+                      <td className={cell}>{s.max ?? "—"}</td>
+                      <td className={cell}>{s.count}</td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+
+              <h3 className="mb-1 mt-3 text-sm font-bold text-muted">
+                Detalle
+              </h3>
+              <table className="w-full border-collapse">
+                <thead>
+                  <tr className="border-b border-line text-muted">
+                    <th className={cell}>Fecha y hora</th>
+                    <th className={cell}>Signo</th>
+                    <th className={cell}>Valor</th>
+                    <th className={cell}>Registrado por</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  {obsList.map((o, i) => (
+                    <tr key={i} className="border-b border-line">
+                      <td className={cell}>
+                        {formatApp(o.measured_at, "d MMM, h:mm a")}
+                      </td>
+                      <td className={cell}>
+                        {OBS_CONFIG[o.type as ObsType].label}
+                      </td>
+                      <td className={cell}>
+                        {formatObsValue(
+                          o.type as ObsType,
+                          o.value_num,
+                          o.value_text,
+                          o.unit,
+                        )}
+                        {o.note ? ` · ${o.note}` : ""}
+                      </td>
+                      <td className={cell}>
+                        {o.recorded_by ? nameById.get(o.recorded_by) ?? "—" : "—"}
+                      </td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+            </>
           )}
         </Section>
 
