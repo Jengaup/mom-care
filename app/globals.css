@@ -17,6 +17,11 @@ body {
   -webkit-font-smoothing: antialiased;
 }
 
+/* Modo de texto grande (accesibilidad). Escala TODO lo basado en rem. */
+html[data-text="lg"] {
+  font-size: 18.5px;
+}
+
 body {
   overscroll-behavior-y: none;
 }

@@ -9,6 +9,7 @@ import {
   updateGraceMinutes,
   updateCaregiverRole,
   removeCaregiver,
+  setTextSize,
   signOut,
 } from "@/app/(app)/actions/settings";
 
@@ -21,16 +22,25 @@ export function SettingsClient({
   isAdmin,
   graceMinutes,
   caregivers,
+  textLarge,
 }: {
   me: { id: string; fullName: string; phone: string };
   isAdmin: boolean;
   graceMinutes: number;
   caregivers: Caregiver[];
+  textLarge: boolean;
 }) {
   const router = useRouter();
   const [fullName, setFullName] = useState(me.fullName);
   const [phone, setPhone] = useState(me.phone);
   const [profileMsg, setProfileMsg] = useState("");
+  const [large, setLarge] = useState(textLarge);
+
+  async function toggleTextSize(next: boolean) {
+    setLarge(next);
+    await setTextSize(next ? "lg" : "normal");
+    router.refresh();
+  }
 
   const [grace, setGrace] = useState(String(graceMinutes));
   const [graceMsg, setGraceMsg] = useState("");
@@ -118,6 +128,38 @@ export function SettingsClient({
           {profileMsg ? (
             <span className="text-sm text-muted">{profileMsg}</span>
           ) : null}
+        </div>
+      </Card>
+
+      {/* Tamaño de texto (todos) */}
+      <Card className="space-y-3">
+        <CardTitle>Tamaño de texto</CardTitle>
+        <p className="text-sm text-muted">
+          Agranda toda la letra de la app para leerla más fácil.
+        </p>
+        <div className="grid grid-cols-2 gap-2">
+          <button
+            type="button"
+            onClick={() => toggleTextSize(false)}
+            className={`min-h-touch rounded-xl border text-base font-semibold ${
+              !large
+                ? "border-brand bg-brand-soft text-brand-dark"
+                : "border-line text-muted"
+            }`}
+          >
+            Normal
+          </button>
+          <button
+            type="button"
+            onClick={() => toggleTextSize(true)}
+            className={`min-h-touch rounded-xl border text-lg font-semibold ${
+              large
+                ? "border-brand bg-brand-soft text-brand-dark"
+                : "border-line text-muted"
+            }`}
+          >
+            Grande
+          </button>
         </div>
       </Card>
 

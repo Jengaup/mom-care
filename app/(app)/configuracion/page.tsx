@@ -1,6 +1,8 @@
+import { cookies } from "next/headers";
 import { getSessionUser } from "@/lib/auth";
 import { getActivePatient, getLinkedPatients } from "@/lib/patient";
 import { createClient } from "@/lib/supabase/server";
+import { TEXT_SIZE_COOKIE } from "@/lib/prefs";
 import { EmptyState } from "@/components/ui/EmptyState";
 import { SettingsClient } from "@/components/settings/SettingsClient";
 import { PatientsCard } from "@/components/settings/PatientsCard";
@@ -16,6 +18,8 @@ export default async function ConfiguracionPage() {
 
   const supabase = await createClient();
   const linkedPatients = await getLinkedPatients();
+  const cookieStore = await cookies();
+  const textLarge = cookieStore.get(TEXT_SIZE_COOKIE)?.value === "lg";
 
   const { data: profile } = await supabase
     .from("profiles")
@@ -90,6 +94,7 @@ export default async function ConfiguracionPage() {
         isAdmin={user.role === "admin"}
         graceMinutes={patient?.grace_minutes ?? 60}
         caregivers={caregivers}
+        textLarge={textLarge}
       />
     </div>
   );

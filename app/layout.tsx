@@ -1,7 +1,9 @@
 import type { Metadata, Viewport } from "next";
+import { cookies } from "next/headers";
 import { Figtree, Fraunces } from "next/font/google";
 import "./globals.css";
 import { RegisterSW } from "@/components/pwa/RegisterSW";
+import { TEXT_SIZE_COOKIE } from "@/lib/prefs";
 
 const figtree = Figtree({
   subsets: ["latin"],
@@ -37,13 +39,19 @@ export const viewport: Viewport = {
   maximumScale: 1,
 };
 
-export default function RootLayout({
+export default async function RootLayout({
   children,
 }: {
   children: React.ReactNode;
 }) {
+  const cookieStore = await cookies();
+  const large = cookieStore.get(TEXT_SIZE_COOKIE)?.value === "lg";
   return (
-    <html lang="es" className={`${figtree.variable} ${fraunces.variable}`}>
+    <html
+      lang="es"
+      data-text={large ? "lg" : undefined}
+      className={`${figtree.variable} ${fraunces.variable}`}
+    >
       <body>
         {children}
         <RegisterSW />
