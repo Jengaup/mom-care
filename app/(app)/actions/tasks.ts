@@ -9,7 +9,7 @@ import type { TablesInsert } from "@/types/database";
 export type TaskStatus = "done" | "skipped";
 
 export type RecordTaskResult =
-  | { ok: true }
+  | { ok: true; logId: string | null }
   | {
       ok: false;
       conflict: true;
@@ -31,15 +31,19 @@ export async function recordTask(input: {
   const supabase = await createClient();
   const nowISO = new Date().toISOString();
 
-  const { error } = await supabase.from("task_logs").insert({
-    task_id: input.taskId,
-    schedule_id: input.scheduleId,
-    scheduled_for: input.scheduledForISO,
-    completed_at: input.status === "done" ? nowISO : null,
-    status: input.status,
-    note: input.note ?? null,
-    recorded_by: user.id,
-  });
+  const { data: inserted, error } = await supabase
+    .from("task_logs")
+    .insert({
+      task_id: input.taskId,
+      schedule_id: input.scheduleId,
+      scheduled_for: input.scheduledForISO,
+      completed_at: input.status === "done" ? nowISO : null,
+      status: input.status,
+      note: input.note ?? null,
+      recorded_by: user.id,
+    })
+    .select("id")
+    .single();
 
   if (error) {
     if (error.code === "23505") {
@@ -69,6 +73,27 @@ export async function recordTask(input: {
     return { ok: false, conflict: false, message: "No se pudo registrar." };
   }
 
+  revalidatePath("/tareas");
+  revalidatePath("/");
+  return { ok: true, logId: inserted?.id ?? null };
+}
+
+/** Deshace un registro reciente de tarea (solo quien lo registró, ventana de
+ * 10 min impuesta por RLS). */
+export async function undoTaskLog(
+  logId: string,
+): Promise<{ ok: boolean; message?: string }> {
+  await requireUser();
+  const supabase = await createClient();
+  const { data, error } = await supabase
+    .from("task_logs")
+    .delete()
+    .eq("id", logId)
+    .select("id");
+  if (error) return { ok: false, message: "No se pudo deshacer." };
+  if (!data || data.length === 0) {
+    return { ok: false, message: "Ya no se puede deshacer." };
+  }
   revalidatePath("/tareas");
   revalidatePath("/");
   return { ok: true };

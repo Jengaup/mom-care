@@ -9,7 +9,7 @@ import type { TablesInsert } from "@/types/database";
 export type DoseStatus = "given" | "skipped" | "postponed";
 
 export type RecordDoseResult =
-  | { ok: true }
+  | { ok: true; logId: string | null }
   | {
       ok: false;
       conflict: true;
@@ -46,17 +46,21 @@ export async function recordDose(input: {
   const supabase = await createClient();
   const nowISO = new Date().toISOString();
 
-  const { error } = await supabase.from("medication_logs").insert({
-    patient_medication_id: input.patientMedicationId,
-    schedule_id: input.scheduleId,
-    scheduled_for: input.scheduledForISO,
-    administered_at: input.status === "given" ? nowISO : null,
-    status: input.status,
-    postponed_to:
-      input.status === "postponed" ? input.postponedToISO ?? null : null,
-    note: input.note ?? null,
-    recorded_by: user.id,
-  });
+  const { data: inserted, error } = await supabase
+    .from("medication_logs")
+    .insert({
+      patient_medication_id: input.patientMedicationId,
+      schedule_id: input.scheduleId,
+      scheduled_for: input.scheduledForISO,
+      administered_at: input.status === "given" ? nowISO : null,
+      status: input.status,
+      postponed_to:
+        input.status === "postponed" ? input.postponedToISO ?? null : null,
+      note: input.note ?? null,
+      recorded_by: user.id,
+    })
+    .select("id")
+    .single();
 
   if (error) {
     if (error.code === "23505") {
@@ -79,11 +83,11 @@ export async function recordDose(input: {
 
   revalidatePath("/medicamentos");
   revalidatePath("/");
-  return { ok: true };
+  return { ok: true, logId: inserted?.id ?? null };
 }
 
 export type RecordPrnResult =
-  | { ok: true }
+  | { ok: true; logId: string | null }
   | {
       ok: false;
       needsConfirm: true;
@@ -137,20 +141,24 @@ export async function recordPrn(input: {
     }
   }
 
-  const { error } = await supabase.from("medication_logs").insert({
-    patient_medication_id: input.patientMedicationId,
-    schedule_id: input.scheduleId,
-    scheduled_for: null,
-    administered_at: new Date().toISOString(),
-    status: "given",
-    note: input.note ?? null,
-    recorded_by: user.id,
-  });
+  const { data: inserted, error } = await supabase
+    .from("medication_logs")
+    .insert({
+      patient_medication_id: input.patientMedicationId,
+      schedule_id: input.scheduleId,
+      scheduled_for: null,
+      administered_at: new Date().toISOString(),
+      status: "given",
+      note: input.note ?? null,
+      recorded_by: user.id,
+    })
+    .select("id")
+    .single();
   if (error) return { ok: false, needsConfirm: false, message: "No se pudo registrar." };
 
   revalidatePath("/medicamentos");
   revalidatePath("/");
-  return { ok: true };
+  return { ok: true, logId: inserted?.id ?? null };
 }
 
 // ── Catálogo + alta (admin) ──────────────────────────────────────────────────
@@ -450,6 +458,27 @@ export async function restockMedication(input: {
   if (error) return { ok: false, message: "No se pudo registrar." };
   revalidatePath("/medicamentos");
   revalidatePath("/medicamentos/gestionar");
+  revalidatePath("/");
+  return { ok: true };
+}
+
+/** Deshace un registro reciente de medicamento (solo quien lo registró y
+ * dentro de la ventana de 10 min; lo impone la RLS). */
+export async function undoMedLog(
+  logId: string,
+): Promise<{ ok: boolean; message?: string }> {
+  await requireUser();
+  const supabase = await createClient();
+  const { data, error } = await supabase
+    .from("medication_logs")
+    .delete()
+    .eq("id", logId)
+    .select("id");
+  if (error) return { ok: false, message: "No se pudo deshacer." };
+  if (!data || data.length === 0) {
+    return { ok: false, message: "Ya no se puede deshacer." };
+  }
+  revalidatePath("/medicamentos");
   revalidatePath("/");
   return { ok: true };
 }

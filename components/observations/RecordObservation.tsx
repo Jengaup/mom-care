@@ -4,7 +4,10 @@ import { useState } from "react";
 import { useRouter } from "next/navigation";
 import { Button } from "@/components/ui/Button";
 import { Card, CardTitle } from "@/components/ui/Card";
-import { recordObservation } from "@/app/(app)/actions/observations";
+import {
+  recordObservation,
+  undoObservation,
+} from "@/app/(app)/actions/observations";
 import { OBS_CONFIG, OBS_ORDER, type ObsType } from "@/lib/observations";
 
 const field = "min-h-touch w-full rounded-xl border border-line px-4 text-base";
@@ -18,6 +21,7 @@ export function RecordObservation() {
   const [note, setNote] = useState("");
   const [saving, setSaving] = useState(false);
   const [msg, setMsg] = useState("");
+  const [lastLog, setLastLog] = useState<string | null>(null);
 
   const cfg = OBS_CONFIG[type];
 
@@ -53,9 +57,24 @@ export function RecordObservation() {
       setText("");
       setNote("");
       setMsg("Registrado ✓");
+      setLastLog(res.logId ?? null);
       router.refresh();
     } else {
       setMsg(res.message ?? "Error");
+    }
+  }
+
+  async function undo() {
+    if (!lastLog) return;
+    setSaving(true);
+    const res = await undoObservation(lastLog);
+    setSaving(false);
+    if (res.ok) {
+      setLastLog(null);
+      setMsg("");
+      router.refresh();
+    } else {
+      setMsg(res.message ?? "No se pudo deshacer");
     }
   }
 
@@ -130,6 +149,11 @@ export function RecordObservation() {
         <Button onClick={save} disabled={saving}>
           {saving ? "Guardando…" : "Registrar"}
         </Button>
+        {lastLog ? (
+          <Button variant="ghost" className="px-3" onClick={undo} disabled={saving}>
+            Deshacer
+          </Button>
+        ) : null}
         {msg ? <span className="text-sm text-muted">{msg}</span> : null}
       </div>
     </Card>

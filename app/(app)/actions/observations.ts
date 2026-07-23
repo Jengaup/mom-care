@@ -13,23 +13,48 @@ export async function recordObservation(input: {
   valueText: string | null;
   unit: string | null;
   note: string | null;
-}): Promise<{ ok: boolean; message?: string }> {
+}): Promise<{ ok: boolean; message?: string; logId?: string | null }> {
   const user = await requireUser();
   const patient = await getActivePatient();
   if (!patient) return { ok: false, message: "No hay paciente activo." };
   const supabase = await createClient();
 
-  const { error } = await supabase.from("observations").insert({
-    patient_id: patient.id,
-    type: input.type,
-    value_num: input.valueNum,
-    value_text: input.valueText?.trim() || null,
-    unit: input.unit,
-    note: input.note?.trim() || null,
-    recorded_by: user.id,
-  });
+  const { data: inserted, error } = await supabase
+    .from("observations")
+    .insert({
+      patient_id: patient.id,
+      type: input.type,
+      value_num: input.valueNum,
+      value_text: input.valueText?.trim() || null,
+      unit: input.unit,
+      note: input.note?.trim() || null,
+      recorded_by: user.id,
+    })
+    .select("id")
+    .single();
   if (error) return { ok: false, message: "No se pudo registrar." };
 
+  revalidatePath("/signos");
+  revalidatePath("/");
+  return { ok: true, logId: inserted?.id ?? null };
+}
+
+/** Deshace un signo recién registrado (solo quien lo registró, ventana de
+ * 10 min impuesta por RLS). */
+export async function undoObservation(
+  id: string,
+): Promise<{ ok: boolean; message?: string }> {
+  await requireUser();
+  const supabase = await createClient();
+  const { data, error } = await supabase
+    .from("observations")
+    .delete()
+    .eq("id", id)
+    .select("id");
+  if (error) return { ok: false, message: "No se pudo deshacer." };
+  if (!data || data.length === 0) {
+    return { ok: false, message: "Ya no se puede deshacer." };
+  }
   revalidatePath("/signos");
   revalidatePath("/");
   return { ok: true };
