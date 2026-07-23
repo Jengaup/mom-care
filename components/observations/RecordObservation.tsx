@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useRef, useState } from "react";
 import { useRouter } from "next/navigation";
 import { Button } from "@/components/ui/Button";
 import { Card, CardTitle } from "@/components/ui/Card";
@@ -8,11 +8,38 @@ import {
   recordObservation,
   undoObservation,
 } from "@/app/(app)/actions/observations";
+import { recordAttachment } from "@/app/(app)/actions/attachments";
+import { createClient } from "@/lib/supabase/client";
+import { APP_TIMEZONE } from "@/lib/time";
 import { OBS_CONFIG, OBS_ORDER, type ObsType } from "@/lib/observations";
 
 const field = "min-h-touch w-full rounded-xl border border-line px-4 text-base";
+const BUCKET = "attachments";
+const MAX_BYTES = 10 * 1024 * 1024; // 10 MB
 
-export function RecordObservation() {
+/** Fecha y hora en AST para nombrar el archivo (ej. 2026-07-23_14-30). */
+function stampNow(): { file: string; label: string } {
+  const parts = new Intl.DateTimeFormat("en-CA", {
+    timeZone: APP_TIMEZONE,
+    year: "numeric",
+    month: "2-digit",
+    day: "2-digit",
+    hour: "2-digit",
+    minute: "2-digit",
+    hour12: false,
+  }).formatToParts(new Date());
+  const get = (t: string) => parts.find((p) => p.type === t)?.value ?? "";
+  const date = `${get("year")}-${get("month")}-${get("day")}`;
+  const time = `${get("hour")}-${get("minute")}`;
+  return { file: `${date}_${time}`, label: `${date} ${get("hour")}:${get("minute")}` };
+}
+
+function extOf(name: string): string {
+  const i = name.lastIndexOf(".");
+  return i >= 0 ? name.slice(i).toLowerCase() : "";
+}
+
+export function RecordObservation({ patientId }: { patientId: string }) {
   const router = useRouter();
   const [type, setType] = useState<ObsType>("blood_pressure");
   const [num, setNum] = useState("");
@@ -23,7 +50,52 @@ export function RecordObservation() {
   const [msg, setMsg] = useState("");
   const [lastLog, setLastLog] = useState<string | null>(null);
 
+  const fileRef = useRef<HTMLInputElement>(null);
+  const [uploading, setUploading] = useState(false);
+  const [photoMsg, setPhotoMsg] = useState("");
+
   const cfg = OBS_CONFIG[type];
+
+  async function uploadPhoto(fileObj: File) {
+    setPhotoMsg("");
+    if (fileObj.size > MAX_BYTES) {
+      setPhotoMsg("El archivo es muy grande (máx. 10 MB).");
+      return;
+    }
+    setUploading(true);
+    try {
+      const supabase = createClient();
+      const stamp = stampNow();
+      const ext = extOf(fileObj.name) || (fileObj.type === "application/pdf" ? ".pdf" : ".jpg");
+      const renamed = `piel_${stamp.file}${ext}`;
+      const path = `${patientId}/${crypto.randomUUID()}-${renamed}`;
+      const { error: upErr } = await supabase.storage
+        .from(BUCKET)
+        .upload(path, fileObj, { contentType: fileObj.type || undefined });
+      if (upErr) {
+        setPhotoMsg("No se pudo subir el archivo.");
+        setUploading(false);
+        return;
+      }
+      const res = await recordAttachment({
+        storagePath: path,
+        fileName: renamed,
+        mimeType: fileObj.type || null,
+        note: `Piel / úlceras — ${stamp.label}${text.trim() ? ` · ${text.trim()}` : ""}`,
+      });
+      if (res.ok) {
+        if (fileRef.current) fileRef.current.value = "";
+        setPhotoMsg("Foto guardada en Documentos ✓");
+        router.refresh();
+      } else {
+        setPhotoMsg(res.message ?? "Error");
+      }
+    } catch {
+      setPhotoMsg("No se pudo subir el archivo.");
+    } finally {
+      setUploading(false);
+    }
+  }
 
   function pick(t: ObsType) {
     setType(t);
@@ -137,6 +209,33 @@ export function RecordObservation() {
           />
         </div>
       )}
+
+      {type === "skin" ? (
+        <div className="space-y-2 rounded-xl border border-line bg-black/[0.02] p-3">
+          <p className="text-sm font-semibold text-ink/80">
+            Foto o documento de la piel/úlcera
+          </p>
+          <input
+            ref={fileRef}
+            type="file"
+            accept="image/*,application/pdf"
+            capture="environment"
+            disabled={uploading}
+            onChange={(e) => {
+              const f = e.target.files?.[0];
+              if (f) void uploadPhoto(f);
+            }}
+            className="block w-full text-sm text-muted file:mr-3 file:min-h-touch file:rounded-xl file:border-0 file:bg-brand file:px-4 file:font-semibold file:text-white"
+          />
+          <p className="text-xs text-muted">
+            Se guarda en Documentos con la fecha en el nombre.
+            {uploading ? " Subiendo…" : ""}
+          </p>
+          {photoMsg ? (
+            <p className="text-sm text-muted">{photoMsg}</p>
+          ) : null}
+        </div>
+      ) : null}
 
       <input
         value={note}
