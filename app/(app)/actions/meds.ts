@@ -211,6 +211,11 @@ export type NewMedicationInput = {
   anchorTime?: string | null;
   prnReason?: string | null;
   prnMinHours?: number | null;
+  trackStock?: boolean;
+  unitsPerDose?: number | null;
+  stockUnitLabel?: string | null;
+  lowStockThreshold?: number | null;
+  initialStock?: number | null;
 };
 
 export async function createMedication(
@@ -233,6 +238,10 @@ export async function createMedication(
       instructions: input.instructions?.trim() || null,
       prn_reason: isPrn ? input.prnReason?.trim() || null : null,
       prn_min_hours_between: isPrn ? input.prnMinHours ?? null : null,
+      track_stock: input.trackStock ?? false,
+      units_per_dose: input.unitsPerDose ?? 1,
+      stock_unit_label: input.trackStock ? input.stockUnitLabel?.trim() || null : null,
+      low_stock_threshold: input.trackStock ? input.lowStockThreshold ?? null : null,
       created_by: user.id,
     })
     .select("id")
@@ -248,6 +257,17 @@ export async function createMedication(
     .from("medication_schedules")
     .insert(scheduleRows);
   if (schedErr) return { ok: false, message: "No se pudo crear el horario." };
+
+  // Reabastecimiento inicial (fija el punto de partida del conteo).
+  if (input.trackStock && input.initialStock && input.initialStock > 0) {
+    await supabase.from("medication_restocks").insert({
+      patient_medication_id: med.id,
+      patient_id: patient.id,
+      units: input.initialStock,
+      note: "Inventario inicial",
+      recorded_by: user.id,
+    });
+  }
 
   revalidatePath("/medicamentos");
   revalidatePath("/medicamentos/gestionar");
@@ -305,6 +325,10 @@ export type EditMedicationInput = {
   anchorTime?: string | null;
   prnReason?: string | null;
   prnMinHours?: number | null;
+  trackStock?: boolean;
+  unitsPerDose?: number | null;
+  stockUnitLabel?: string | null;
+  lowStockThreshold?: number | null;
 };
 
 /** Edita un medicamento (admin): datos + reemplaza sus horarios. */
@@ -325,6 +349,10 @@ export async function updateMedication(
       is_active: input.isActive,
       prn_reason: isPrn ? input.prnReason?.trim() || null : null,
       prn_min_hours_between: isPrn ? input.prnMinHours ?? null : null,
+      track_stock: input.trackStock ?? false,
+      units_per_dose: input.unitsPerDose ?? 1,
+      stock_unit_label: input.trackStock ? input.stockUnitLabel?.trim() || null : null,
+      low_stock_threshold: input.trackStock ? input.lowStockThreshold ?? null : null,
     })
     .eq("id", input.medicationId);
   if (medErr) return { ok: false, message: "No se pudo actualizar el medicamento." };
@@ -394,6 +422,34 @@ export async function correctMedLog(
   if (error) return { ok: false, message: "No se pudo corregir." };
   revalidatePath("/historial");
   revalidatePath("/medicamentos");
+  revalidatePath("/");
+  return { ok: true };
+}
+
+/** Registra un reabastecimiento de inventario (admin). Unidades negativas
+ * corrigen el conteo. */
+export async function restockMedication(input: {
+  medicationId: string;
+  units: number;
+  note?: string | null;
+}): Promise<{ ok: boolean; message?: string }> {
+  const user = await requireRole("admin");
+  const patient = await getActivePatient();
+  if (!patient) return { ok: false, message: "No hay paciente activo." };
+  if (!Number.isFinite(input.units) || input.units === 0) {
+    return { ok: false, message: "Escribe una cantidad." };
+  }
+  const supabase = await createClient();
+  const { error } = await supabase.from("medication_restocks").insert({
+    patient_medication_id: input.medicationId,
+    patient_id: patient.id,
+    units: input.units,
+    note: input.note?.trim() || null,
+    recorded_by: user.id,
+  });
+  if (error) return { ok: false, message: "No se pudo registrar." };
+  revalidatePath("/medicamentos");
+  revalidatePath("/medicamentos/gestionar");
   revalidatePath("/");
   return { ok: true };
 }

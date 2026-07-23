@@ -22,6 +22,10 @@ export type EditInitial = {
   anchorTime: string;
   prnReason: string;
   prnMinHours: string;
+  trackStock: boolean;
+  unitsPerDose: string;
+  stockUnitLabel: string;
+  lowStockThreshold: string;
 };
 
 const DAYS = [
@@ -63,6 +67,13 @@ export function EditMedicationForm({
   const [prnReason, setPrnReason] = useState(initial.prnReason);
   const [prnMinHours, setPrnMinHours] = useState(initial.prnMinHours || "6");
 
+  const [trackStock, setTrackStock] = useState(initial.trackStock);
+  const [unitsPerDose, setUnitsPerDose] = useState(initial.unitsPerDose || "1");
+  const [stockUnitLabel, setStockUnitLabel] = useState(initial.stockUnitLabel);
+  const [lowStockThreshold, setLowStockThreshold] = useState(
+    initial.lowStockThreshold,
+  );
+
   const [saving, setSaving] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
@@ -94,6 +105,11 @@ export function EditMedicationForm({
       prnReason: scheduleType === "prn" ? prnReason || null : null,
       prnMinHours:
         scheduleType === "prn" && prnMinHours ? Number(prnMinHours) : null,
+      trackStock,
+      unitsPerDose: trackStock ? Number(unitsPerDose) || 1 : null,
+      stockUnitLabel: trackStock ? stockUnitLabel || null : null,
+      lowStockThreshold:
+        trackStock && lowStockThreshold ? Number(lowStockThreshold) : null,
     });
     setSaving(false);
     if (res.ok) {
@@ -304,6 +320,55 @@ export function EditMedicationForm({
                 className={field}
               />
             </div>
+          </div>
+        ) : null}
+      </Card>
+
+      <Card className="space-y-3">
+        <label className="flex items-center gap-2 text-base font-medium text-ink/80">
+          <input
+            type="checkbox"
+            checked={trackStock}
+            onChange={(e) => setTrackStock(e.target.checked)}
+            className="h-5 w-5"
+          />
+          Llevar inventario de este medicamento
+        </label>
+        {trackStock ? (
+          <div className="space-y-2">
+            <div className="grid grid-cols-2 gap-2">
+              <div>
+                <label className="text-sm text-muted">Unidad</label>
+                <input
+                  value={stockUnitLabel}
+                  onChange={(e) => setStockUnitLabel(e.target.value)}
+                  placeholder="tabletas, mL…"
+                  className={field}
+                />
+              </div>
+              <div>
+                <label className="text-sm text-muted">Unidades por dosis</label>
+                <input
+                  value={unitsPerDose}
+                  onChange={(e) => setUnitsPerDose(e.target.value)}
+                  inputMode="numeric"
+                  className={field}
+                />
+              </div>
+            </div>
+            <div>
+              <label className="text-sm text-muted">Avisar cuando queden</label>
+              <input
+                value={lowStockThreshold}
+                onChange={(e) => setLowStockThreshold(e.target.value)}
+                inputMode="numeric"
+                className={field}
+              />
+            </div>
+            <p className="text-xs text-muted">
+              La cantidad se ajusta con el botón «Reabastecer». El saldo baja
+              solo cada vez que se registra una dosis.
+            </p>
           </div>
         ) : null}
       </Card>

@@ -21,7 +21,7 @@ export default async function EditarMedicamentoPage({
   const { data: med } = await supabase
     .from("patient_medications")
     .select(
-      "id, name, dose, unit, instructions, is_active, prn_reason, prn_min_hours_between",
+      "id, name, dose, unit, instructions, is_active, prn_reason, prn_min_hours_between, track_stock, units_per_dose, stock_unit_label, low_stock_threshold",
     )
     .eq("id", id)
     .maybeSingle();
@@ -64,6 +64,12 @@ export default async function EditarMedicamentoPage({
       med.prn_min_hours_between != null
         ? String(med.prn_min_hours_between)
         : "6",
+    trackStock: med.track_stock ?? false,
+    unitsPerDose:
+      med.units_per_dose != null ? String(med.units_per_dose) : "1",
+    stockUnitLabel: med.stock_unit_label ?? "",
+    lowStockThreshold:
+      med.low_stock_threshold != null ? String(med.low_stock_threshold) : "",
   };
 
   return (

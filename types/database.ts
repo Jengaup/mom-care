@@ -126,6 +126,10 @@ export type Database = {
           is_active: boolean;
           prn_reason: string | null;
           prn_min_hours_between: number | null;
+          track_stock: boolean;
+          units_per_dose: number;
+          stock_unit_label: string | null;
+          low_stock_threshold: number | null;
           created_by: string | null;
           created_at: string;
         };
@@ -140,6 +144,10 @@ export type Database = {
           is_active?: boolean;
           prn_reason?: string | null;
           prn_min_hours_between?: number | null;
+          track_stock?: boolean;
+          units_per_dose?: number;
+          stock_unit_label?: string | null;
+          low_stock_threshold?: number | null;
           created_by?: string | null;
           created_at?: string;
         };
@@ -154,7 +162,41 @@ export type Database = {
           is_active?: boolean;
           prn_reason?: string | null;
           prn_min_hours_between?: number | null;
+          track_stock?: boolean;
+          units_per_dose?: number;
+          stock_unit_label?: string | null;
+          low_stock_threshold?: number | null;
           created_by?: string | null;
+          created_at?: string;
+        };
+        Relationships: [];
+      };
+      medication_restocks: {
+        Row: {
+          id: string;
+          patient_medication_id: string;
+          patient_id: string;
+          units: number;
+          note: string | null;
+          recorded_by: string;
+          created_at: string;
+        };
+        Insert: {
+          id?: string;
+          patient_medication_id: string;
+          patient_id: string;
+          units: number;
+          note?: string | null;
+          recorded_by: string;
+          created_at?: string;
+        };
+        Update: {
+          id?: string;
+          patient_medication_id?: string;
+          patient_id?: string;
+          units?: number;
+          note?: string | null;
+          recorded_by?: string;
           created_at?: string;
         };
         Relationships: [];
