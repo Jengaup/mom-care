@@ -239,31 +239,7 @@ export async function createMedication(
     .single();
   if (medErr || !med) return { ok: false, message: "No se pudo crear el medicamento." };
 
-  const scheduleRows: TablesInsert<"medication_schedules">[] = [];
-  if (input.scheduleType === "fixed") {
-    for (const t of input.fixedTimes ?? []) {
-      if (!t) continue;
-      scheduleRows.push({
-        patient_medication_id: med.id,
-        schedule_type: "fixed",
-        time_of_day: t,
-        days_of_week: input.daysOfWeek ?? null,
-      });
-    }
-  } else if (input.scheduleType === "interval") {
-    scheduleRows.push({
-      patient_medication_id: med.id,
-      schedule_type: "interval",
-      interval_hours: input.intervalHours,
-      anchor_time: input.anchorTime,
-    });
-  } else {
-    scheduleRows.push({
-      patient_medication_id: med.id,
-      schedule_type: "prn",
-    });
-  }
-
+  const scheduleRows = scheduleRowsFor(med.id, input);
   if (scheduleRows.length === 0) {
     return { ok: false, message: "Añade al menos una hora." };
   }
@@ -274,5 +250,119 @@ export async function createMedication(
   if (schedErr) return { ok: false, message: "No se pudo crear el horario." };
 
   revalidatePath("/medicamentos");
+  revalidatePath("/medicamentos/gestionar");
+  return { ok: true };
+}
+
+type FreqInput = {
+  scheduleType: "fixed" | "interval" | "prn";
+  fixedTimes?: string[];
+  daysOfWeek?: number[] | null;
+  intervalHours?: number | null;
+  anchorTime?: string | null;
+};
+
+/** Construye las filas de medication_schedules para un tipo de frecuencia. */
+function scheduleRowsFor(
+  medId: string,
+  f: FreqInput,
+): TablesInsert<"medication_schedules">[] {
+  const rows: TablesInsert<"medication_schedules">[] = [];
+  if (f.scheduleType === "fixed") {
+    for (const t of f.fixedTimes ?? []) {
+      if (!t) continue;
+      rows.push({
+        patient_medication_id: medId,
+        schedule_type: "fixed",
+        time_of_day: t,
+        days_of_week: f.daysOfWeek ?? null,
+      });
+    }
+  } else if (f.scheduleType === "interval") {
+    rows.push({
+      patient_medication_id: medId,
+      schedule_type: "interval",
+      interval_hours: f.intervalHours,
+      anchor_time: f.anchorTime,
+    });
+  } else {
+    rows.push({ patient_medication_id: medId, schedule_type: "prn" });
+  }
+  return rows;
+}
+
+export type EditMedicationInput = {
+  medicationId: string;
+  name: string;
+  dose: number | null;
+  unit: string | null;
+  instructions: string | null;
+  isActive: boolean;
+  scheduleType: "fixed" | "interval" | "prn";
+  fixedTimes?: string[];
+  daysOfWeek?: number[] | null;
+  intervalHours?: number | null;
+  anchorTime?: string | null;
+  prnReason?: string | null;
+  prnMinHours?: number | null;
+};
+
+/** Edita un medicamento (admin): datos + reemplaza sus horarios. */
+export async function updateMedication(
+  input: EditMedicationInput,
+): Promise<{ ok: boolean; message?: string }> {
+  await requireRole("admin");
+  const supabase = await createClient();
+  const isPrn = input.scheduleType === "prn";
+
+  const { error: medErr } = await supabase
+    .from("patient_medications")
+    .update({
+      name: input.name.trim(),
+      dose: input.dose,
+      unit: input.unit,
+      instructions: input.instructions?.trim() || null,
+      is_active: input.isActive,
+      prn_reason: isPrn ? input.prnReason?.trim() || null : null,
+      prn_min_hours_between: isPrn ? input.prnMinHours ?? null : null,
+    })
+    .eq("id", input.medicationId);
+  if (medErr) return { ok: false, message: "No se pudo actualizar el medicamento." };
+
+  // Reemplaza horarios: desactiva los actuales e inserta los nuevos.
+  // (Sin DELETE por diseño; los logs previos quedan como historial.)
+  await supabase
+    .from("medication_schedules")
+    .update({ is_active: false })
+    .eq("patient_medication_id", input.medicationId);
+
+  const rows = scheduleRowsFor(input.medicationId, input);
+  if (rows.length === 0) return { ok: false, message: "Añade al menos una hora." };
+  const { error: schedErr } = await supabase
+    .from("medication_schedules")
+    .insert(rows);
+  if (schedErr) return { ok: false, message: "No se pudo guardar el horario." };
+
+  revalidatePath("/medicamentos");
+  revalidatePath("/medicamentos/gestionar");
+  revalidatePath("/");
+  return { ok: true };
+}
+
+/** Activa o desactiva un medicamento (admin). */
+export async function setMedicationActive(
+  medicationId: string,
+  active: boolean,
+): Promise<{ ok: boolean }> {
+  await requireRole("admin");
+  const supabase = await createClient();
+  const { error } = await supabase
+    .from("patient_medications")
+    .update({ is_active: active })
+    .eq("id", medicationId);
+  if (error) return { ok: false };
+  revalidatePath("/medicamentos");
+  revalidatePath("/medicamentos/gestionar");
+  revalidatePath("/");
   return { ok: true };
 }
