@@ -6,6 +6,7 @@ import { groupMedOccurrences, groupTaskOccurrences } from "@/lib/dto";
 import { createClient } from "@/lib/supabase/server";
 import { formatApp, formatTime, now, todayInAppTz } from "@/lib/time";
 import { isActionableNow } from "@/lib/occurrences";
+import { OBS_CONFIG, formatObsValue, type ObsType } from "@/lib/observations";
 import { Card } from "@/components/ui/Card";
 import { EmptyState } from "@/components/ui/EmptyState";
 import { MedicationList } from "@/components/medications/MedicationList";
@@ -37,8 +38,12 @@ export default async function DashboardPage() {
   const actionableTasks = taskOccs.filter((o) => isActionableNow(o.state));
   const pendingTasks = taskOccs.filter((o) => o.state === "pending");
 
-  const [{ data: nextAppt }, { data: todayNote }, { data: activity }] =
-    await Promise.all([
+  const [
+    { data: nextAppt },
+    { data: todayNote },
+    { data: activity },
+    { data: lastObs },
+  ] = await Promise.all([
       supabase
         .from("appointments")
         .select("*")
@@ -61,6 +66,13 @@ export default async function DashboardPage() {
         .eq("patient_id", patient.id)
         .order("created_at", { ascending: false })
         .limit(10),
+      supabase
+        .from("observations")
+        .select("type, value_num, value_text, unit, measured_at")
+        .eq("patient_id", patient.id)
+        .order("measured_at", { ascending: false })
+        .limit(1)
+        .maybeSingle(),
     ]);
 
   // Nombres de actores para el feed.
@@ -184,6 +196,40 @@ export default async function DashboardPage() {
             ))}
           </Card>
         )}
+      </section>
+
+      {/* (c2) Signos */}
+      <section className="space-y-2">
+        <div className="flex items-center justify-between">
+          <h2 className="text-lg font-bold text-ink">Signos</h2>
+          <Link href="/signos" className="text-sm font-semibold text-brand-dark">
+            Registrar
+          </Link>
+        </div>
+        <Link href="/signos">
+          <Card className="active:bg-black/[0.03]">
+            {lastObs ? (
+              <>
+                <p className="text-base font-semibold text-ink">
+                  {OBS_CONFIG[lastObs.type as ObsType].label}:{" "}
+                  {formatObsValue(
+                    lastObs.type as ObsType,
+                    lastObs.value_num,
+                    lastObs.value_text,
+                    lastObs.unit,
+                  )}
+                </p>
+                <p className="text-sm text-muted">
+                  {formatApp(lastObs.measured_at, "EEEE d MMM, h:mm a")}
+                </p>
+              </>
+            ) : (
+              <p className="text-muted">
+                Registra peso, presión, temperatura y más.
+              </p>
+            )}
+          </Card>
+        </Link>
       </section>
 
       {/* (d) Próxima cita */}

@@ -498,6 +498,45 @@ export type Database = {
         };
         Relationships: [];
       };
+      observations: {
+        Row: {
+          id: string;
+          patient_id: string;
+          type: Database["public"]["Enums"]["observation_type"];
+          value_num: number | null;
+          value_text: string | null;
+          unit: string | null;
+          note: string | null;
+          measured_at: string;
+          recorded_by: string;
+          created_at: string;
+        };
+        Insert: {
+          id?: string;
+          patient_id: string;
+          type: Database["public"]["Enums"]["observation_type"];
+          value_num?: number | null;
+          value_text?: string | null;
+          unit?: string | null;
+          note?: string | null;
+          measured_at?: string;
+          recorded_by: string;
+          created_at?: string;
+        };
+        Update: {
+          id?: string;
+          patient_id?: string;
+          type?: Database["public"]["Enums"]["observation_type"];
+          value_num?: number | null;
+          value_text?: string | null;
+          unit?: string | null;
+          note?: string | null;
+          measured_at?: string;
+          recorded_by?: string;
+          created_at?: string;
+        };
+        Relationships: [];
+      };
     };
     Views: {
       [_ in never]: never;
@@ -531,6 +570,20 @@ export type Database = {
         | "appt_rescheduled"
         | "note_added"
         | "note_updated";
+      observation_type:
+        | "weight"
+        | "blood_pressure"
+        | "temperature"
+        | "glucose"
+        | "heart_rate"
+        | "oxygen"
+        | "pain"
+        | "fluid_intake"
+        | "fluid_output"
+        | "bowel"
+        | "skin"
+        | "mood"
+        | "other";
     };
     CompositeTypes: {
       [_ in never]: never;
