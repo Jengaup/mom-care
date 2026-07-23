@@ -13,8 +13,9 @@ const config: Config = {
         bg: "#f6f4ef",
         surface: "#ffffff",
         ink: "#1f2a28",
-        muted: "#6b7773",
-        line: "#e8e4db",
+        // Oscurecido para pasar contraste AA (>=4.5:1) sobre el fondo arena.
+        muted: "#55635f",
+        line: "#e2ddd2",
         brand: { DEFAULT: "#15803d", dark: "#166534", soft: "#e8f2ea" },
         // Sistema de estado centralizado (spec 6). No usar colores sueltos.
         status: {

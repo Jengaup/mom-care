@@ -264,7 +264,7 @@ export default async function HistorialPage({
       {totalPages > 1 ? (
         <nav className="flex items-center justify-between">
           {page > 1 ? (
-            <a href={pageHref(page - 1)} className="text-status-done">
+            <a href={pageHref(page - 1)} className="font-semibold text-brand-dark">
               ‹ Anterior
             </a>
           ) : (
@@ -274,7 +274,7 @@ export default async function HistorialPage({
             Página {page} de {totalPages}
           </span>
           {page < totalPages ? (
-            <a href={pageHref(page + 1)} className="text-status-done">
+            <a href={pageHref(page + 1)} className="font-semibold text-brand-dark">
               Siguiente ›
             </a>
           ) : (

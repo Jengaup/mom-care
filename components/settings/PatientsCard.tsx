@@ -107,7 +107,7 @@ export function PatientsCard({
                 disabled={switching !== null}
                 className={`min-h-touch flex w-full items-center justify-between rounded-xl border px-4 text-left text-base ${
                   isActive
-                    ? "border-status-done bg-green-50 font-semibold text-status-done"
+                    ? "border-brand bg-brand-soft font-semibold text-brand-dark"
                     : "border-line text-ink"
                 }`}
               >

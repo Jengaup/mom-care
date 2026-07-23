@@ -1,5 +1,6 @@
 import { redirect } from "next/navigation";
 import { getSessionUser } from "@/lib/auth";
+import { HeartIcon } from "@/components/ui/icons";
 import { LoginForm } from "./LoginForm";
 
 // No pre-generar en build: el cliente de Supabase necesita las variables de
@@ -21,10 +22,10 @@ export default async function LoginPage() {
     <div className="mx-auto flex min-h-dvh max-w-sm flex-col justify-center px-6 py-10">
       <div className="mb-10 text-center">
         <span
-          className="mx-auto mb-4 flex h-16 w-16 items-center justify-center rounded-2xl bg-brand-soft text-3xl shadow-card"
+          className="mx-auto mb-4 flex h-16 w-16 items-center justify-center rounded-2xl bg-brand-soft text-brand-dark shadow-card"
           aria-hidden
         >
-          🤍
+          <HeartIcon className="h-8 w-8" />
         </span>
         <h1 className="font-display text-4xl font-semibold tracking-tight text-brand-dark">
           mom-care

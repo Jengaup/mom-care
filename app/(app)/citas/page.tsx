@@ -85,7 +85,10 @@ export default async function CitasPage() {
           Próximas
         </h2>
         {upcomingList.length === 0 ? (
-          <EmptyState title="No hay citas próximas" />
+          <EmptyState
+            title="No hay citas próximas"
+            hint={user?.role === "admin" ? "Toca + Nuevo para añadir una." : undefined}
+          />
         ) : (
           upcomingList.map((a) => <AppointmentRow key={a.id} appt={a} />)
         )}
