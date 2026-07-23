@@ -9,7 +9,11 @@ import { StatusBadge } from "@/components/ui/Badge";
 import { EmptyState } from "@/components/ui/EmptyState";
 import { formatTime } from "@/lib/time";
 import { stateColor, type OccurrenceState } from "@/lib/status";
-import { recordTask, type RecordTaskResult } from "@/app/(app)/actions/tasks";
+import {
+  recordTask,
+  undoTaskLog,
+  type RecordTaskResult,
+} from "@/app/(app)/actions/tasks";
 
 export type TaskDTO = {
   key: string;
@@ -34,6 +38,7 @@ export function TaskList({ groups }: { groups: TaskGroup[] }) {
   const [busy, setBusy] = useState<Record<string, boolean>>({});
   const [sheetFor, setSheetFor] = useState<TaskDTO | null>(null);
   const [note, setNote] = useState("");
+  const [lastLog, setLastLog] = useState<Record<string, string>>({});
 
   const stateOf = (t: TaskDTO): OccurrenceState => override[t.key] ?? t.state;
 
@@ -55,6 +60,7 @@ export function TaskList({ groups }: { groups: TaskGroup[] }) {
         note: noteText,
       });
       if (res.ok) {
+        if (res.logId) setLastLog((m) => ({ ...m, [t.key]: res.logId! }));
         startTransition(() => router.refresh());
       } else if ("conflict" in res && res.conflict) {
         setOverride((m) => ({
@@ -95,6 +101,29 @@ export function TaskList({ groups }: { groups: TaskGroup[] }) {
 
   function complete(t: TaskDTO) {
     void perform(t, "given", "done", null);
+  }
+  async function undo(t: TaskDTO) {
+    const id = lastLog[t.key];
+    if (!id) return;
+    setBusy((m) => ({ ...m, [t.key]: true }));
+    const res = await undoTaskLog(id);
+    setBusy((m) => ({ ...m, [t.key]: false }));
+    if (res.ok) {
+      setOverride((m) => {
+        const n = { ...m };
+        delete n[t.key];
+        return n;
+      });
+      setLastLog((m) => {
+        const n = { ...m };
+        delete n[t.key];
+        return n;
+      });
+      setMsg((m) => ({ ...m, [t.key]: "" }));
+      startTransition(() => router.refresh());
+    } else {
+      setMsg((m) => ({ ...m, [t.key]: res.message ?? "No se pudo deshacer" }));
+    }
   }
   function skip(t: TaskDTO) {
     const n = note.trim() || null;
@@ -137,7 +166,18 @@ export function TaskList({ groups }: { groups: TaskGroup[] }) {
                     ) : null}
                   </div>
                 </div>
-                {resolved ? null : (
+                {resolved ? (
+                  lastLog[t.key] ? (
+                    <Button
+                      variant="ghost"
+                      className="shrink-0 px-3"
+                      onClick={() => undo(t)}
+                      disabled={busy[t.key]}
+                    >
+                      Deshacer
+                    </Button>
+                  ) : null
+                ) : (
                   <div className="flex shrink-0 items-center gap-2">
                     <Button onClick={() => complete(t)} disabled={busy[t.key]}>
                       Completada

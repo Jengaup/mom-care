@@ -237,6 +237,16 @@ values
    'done', 'c0000000-0000-0000-0000-0000000000c1')
 on conflict (id) do nothing;
 
+-- Los logs sembrados son históricos (1–2 días atrás): su created_at debe
+-- reflejarlo, no el momento del seed. Así la ventana de "deshacer" (10 min,
+-- migración 0012) no los alcanza y siguen siendo inmutables.
+update public.medication_logs
+  set created_at = coalesce(administered_at, scheduled_for, created_at)
+  where id::text like '10000000-%';
+update public.task_logs
+  set created_at = coalesce(completed_at, scheduled_for, created_at)
+  where id::text like '20000000-%';
+
 -- ── Catálogo ampliado (idempotente; requiere unaccent de la migración 0007) ──
 -- 2) Catálogo ampliado (genéricos comunes + marcas). No duplica (compara sin
 --    acentos ni mayúsculas). Puedes seguir añadiendo los tuyos desde la app.

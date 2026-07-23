@@ -12,6 +12,7 @@ import { stateColor, type OccurrenceState } from "@/lib/status";
 import {
   recordDose,
   recordPrn,
+  undoMedLog,
   type RecordDoseResult,
   type RecordPrnResult,
 } from "@/app/(app)/actions/meds";
@@ -66,6 +67,8 @@ export function MedicationList({
   const [busy, setBusy] = useState<Record<string, boolean>>({});
   const [sheetFor, setSheetFor] = useState<OccDTO | null>(null);
   const [note, setNote] = useState("");
+  // Id del log recién creado por key, para permitir "Deshacer".
+  const [lastLog, setLastLog] = useState<Record<string, string>>({});
 
   // PRN confirm
   const [prnConfirm, setPrnConfirm] = useState<{
@@ -76,6 +79,7 @@ export function MedicationList({
   } | null>(null);
   const [prnBusy, setPrnBusy] = useState<Record<string, boolean>>({});
   const [prnMsg, setPrnMsg] = useState<Record<string, string>>({});
+  const [prnLastLog, setPrnLastLog] = useState<Record<string, string>>({});
 
   const stateOf = (o: OccDTO): OccurrenceState => override[o.key] ?? o.state;
 
@@ -101,6 +105,7 @@ export function MedicationList({
     try {
       const res = await fn();
       if (res.ok) {
+        if (res.logId) setLastLog((m) => ({ ...m, [o.key]: res.logId! }));
         startTransition(() => router.refresh());
       } else if ("conflict" in res && res.conflict) {
         // Otro cuidador ya lo registró: mostrar quién y cuándo (spec 3.5).
@@ -126,6 +131,26 @@ export function MedicationList({
       }));
     } finally {
       setBusy((m) => ({ ...m, [o.key]: false }));
+    }
+  }
+
+  async function undo(o: OccDTO) {
+    const id = lastLog[o.key];
+    if (!id) return;
+    setBusy((m) => ({ ...m, [o.key]: true }));
+    const res = await undoMedLog(id);
+    setBusy((m) => ({ ...m, [o.key]: false }));
+    if (res.ok) {
+      revert(o.key);
+      setLastLog((m) => {
+        const n = { ...m };
+        delete n[o.key];
+        return n;
+      });
+      setMsg((m) => ({ ...m, [o.key]: "" }));
+      startTransition(() => router.refresh());
+    } else {
+      setMsg((m) => ({ ...m, [o.key]: res.message ?? "No se pudo deshacer" }));
     }
   }
 
@@ -183,6 +208,11 @@ export function MedicationList({
       });
       if (res.ok) {
         setPrnConfirm(null);
+        if (res.logId) {
+          const id = res.logId;
+          setPrnLastLog((m) => ({ ...m, [p.medicationId]: id }));
+          setPrnMsg((m) => ({ ...m, [p.medicationId]: "Registrada ✓" }));
+        }
         startTransition(() => router.refresh());
       } else if ("needsConfirm" in res && res.needsConfirm) {
         setPrnConfirm({
@@ -204,6 +234,28 @@ export function MedicationList({
       }));
     } finally {
       setPrnBusy((m) => ({ ...m, [p.medicationId]: false }));
+    }
+  }
+
+  async function undoPrn(p: PrnDTO) {
+    const id = prnLastLog[p.medicationId];
+    if (!id) return;
+    setPrnBusy((m) => ({ ...m, [p.medicationId]: true }));
+    const res = await undoMedLog(id);
+    setPrnBusy((m) => ({ ...m, [p.medicationId]: false }));
+    if (res.ok) {
+      setPrnLastLog((m) => {
+        const n = { ...m };
+        delete n[p.medicationId];
+        return n;
+      });
+      setPrnMsg((m) => ({ ...m, [p.medicationId]: "" }));
+      startTransition(() => router.refresh());
+    } else {
+      setPrnMsg((m) => ({
+        ...m,
+        [p.medicationId]: res.message ?? "No se pudo deshacer",
+      }));
     }
   }
 
@@ -246,7 +298,18 @@ export function MedicationList({
                         ) : null}
                       </div>
                     </div>
-                    {resolved ? null : (
+                    {resolved ? (
+                      lastLog[o.key] ? (
+                        <Button
+                          variant="ghost"
+                          className="shrink-0 px-3"
+                          onClick={() => undo(o)}
+                          disabled={busy[o.key]}
+                        >
+                          Deshacer
+                        </Button>
+                      ) : null
+                    ) : (
                       <div className="flex shrink-0 items-center gap-2">
                         <Button
                           onClick={() => markGiven(o)}
@@ -307,14 +370,25 @@ export function MedicationList({
                   </p>
                 ) : null}
               </div>
-              <Button
-                variant="secondary"
-                onClick={() => doPrn(p)}
-                disabled={prnBusy[p.medicationId]}
-                className="shrink-0"
-              >
-                Registrar dosis
-              </Button>
+              {prnLastLog[p.medicationId] ? (
+                <Button
+                  variant="ghost"
+                  onClick={() => undoPrn(p)}
+                  disabled={prnBusy[p.medicationId]}
+                  className="shrink-0 px-3"
+                >
+                  Deshacer
+                </Button>
+              ) : (
+                <Button
+                  variant="secondary"
+                  onClick={() => doPrn(p)}
+                  disabled={prnBusy[p.medicationId]}
+                  className="shrink-0"
+                >
+                  Registrar dosis
+                </Button>
+              )}
             </Card>
           ))
         )}
