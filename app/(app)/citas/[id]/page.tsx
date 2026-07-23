@@ -6,6 +6,7 @@ import { formatApp } from "@/lib/time";
 import { Button } from "@/components/ui/Button";
 import { Card } from "@/components/ui/Card";
 import { CompleteAppointmentForm } from "@/components/appointments/CompleteAppointmentForm";
+import { AppointmentAdminActions } from "@/components/appointments/AppointmentAdminActions";
 
 export const dynamic = "force-dynamic";
 
@@ -118,6 +119,10 @@ export default async function CitaDetallePage({
 
       {appt.status !== "completed" && user?.role === "admin" ? (
         <CompleteAppointmentForm appointmentId={appt.id} />
+      ) : null}
+
+      {appt.status === "upcoming" && user?.role === "admin" ? (
+        <AppointmentAdminActions appointmentId={appt.id} />
       ) : null}
     </div>
   );

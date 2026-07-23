@@ -80,3 +80,42 @@ export async function createAppointment(input: {
   revalidatePath("/");
   return { ok: true };
 }
+
+/** Reprograma una cita (admin): nueva fecha/hora, sigue como próxima. */
+export async function rescheduleAppointment(input: {
+  appointmentId: string;
+  scheduledAtLocal: string;
+}): Promise<{ ok: boolean; message?: string }> {
+  await requireRole("admin");
+  if (!input.scheduledAtLocal) return { ok: false, message: "Falta la fecha." };
+  const supabase = await createClient();
+  const [d, t] = input.scheduledAtLocal.split("T");
+  if (!d) return { ok: false, message: "Fecha inválida." };
+  const scheduledAtISO = scheduledForUtc(d, t ?? "00:00").toISOString();
+  const { error } = await supabase
+    .from("appointments")
+    .update({ scheduled_at: scheduledAtISO, status: "upcoming" })
+    .eq("id", input.appointmentId);
+  if (error) return { ok: false, message: "No se pudo reprogramar." };
+  revalidatePath("/citas");
+  revalidatePath(`/citas/${input.appointmentId}`);
+  revalidatePath("/");
+  return { ok: true };
+}
+
+/** Cancela una cita (admin). */
+export async function cancelAppointment(
+  appointmentId: string,
+): Promise<{ ok: boolean; message?: string }> {
+  await requireRole("admin");
+  const supabase = await createClient();
+  const { error } = await supabase
+    .from("appointments")
+    .update({ status: "cancelled" })
+    .eq("id", appointmentId);
+  if (error) return { ok: false, message: "No se pudo cancelar." };
+  revalidatePath("/citas");
+  revalidatePath(`/citas/${appointmentId}`);
+  revalidatePath("/");
+  return { ok: true };
+}

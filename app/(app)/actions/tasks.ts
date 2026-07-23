@@ -116,3 +116,94 @@ export async function createTask(input: {
   revalidatePath("/");
   return { ok: true };
 }
+
+/** Edita una tarea (admin): datos + reemplaza sus horarios. */
+export async function updateTask(input: {
+  taskId: string;
+  title: string;
+  description: string | null;
+  category: string | null;
+  isActive: boolean;
+  times: string[];
+  daysOfWeek: number[] | null;
+}): Promise<{ ok: boolean; message?: string }> {
+  await requireRole("admin");
+  const supabase = await createClient();
+
+  const { error } = await supabase
+    .from("tasks")
+    .update({
+      title: input.title.trim(),
+      description: input.description?.trim() || null,
+      category: input.category?.trim() || null,
+      is_active: input.isActive,
+    })
+    .eq("id", input.taskId);
+  if (error) return { ok: false, message: "No se pudo actualizar la tarea." };
+
+  await supabase
+    .from("task_schedules")
+    .update({ is_active: false })
+    .eq("task_id", input.taskId);
+
+  const rows: TablesInsert<"task_schedules">[] = input.times
+    .filter(Boolean)
+    .map((t) => ({ task_id: input.taskId, time_of_day: t, days_of_week: input.daysOfWeek }));
+  if (rows.length === 0) return { ok: false, message: "Añade al menos una hora." };
+  const { error: schedErr } = await supabase.from("task_schedules").insert(rows);
+  if (schedErr) return { ok: false, message: "No se pudo guardar el horario." };
+
+  revalidatePath("/tareas");
+  revalidatePath("/tareas/gestionar");
+  revalidatePath("/");
+  return { ok: true };
+}
+
+/** Activa o desactiva una tarea (admin). */
+export async function setTaskActive(
+  taskId: string,
+  active: boolean,
+): Promise<{ ok: boolean }> {
+  await requireRole("admin");
+  const supabase = await createClient();
+  const { error } = await supabase
+    .from("tasks")
+    .update({ is_active: active })
+    .eq("id", taskId);
+  if (error) return { ok: false };
+  revalidatePath("/tareas");
+  revalidatePath("/tareas/gestionar");
+  revalidatePath("/");
+  return { ok: true };
+}
+
+/** Corrige el estado de un registro de tarea (solo admin). */
+export async function correctTaskLog(
+  logId: string,
+  newStatus: TaskStatus,
+): Promise<{ ok: boolean; message?: string }> {
+  const user = await requireRole("admin");
+  const supabase = await createClient();
+  const { data: cur } = await supabase
+    .from("task_logs")
+    .select("status")
+    .eq("id", logId)
+    .maybeSingle();
+  if (!cur) return { ok: false, message: "Registro no encontrado." };
+
+  const { error } = await supabase
+    .from("task_logs")
+    .update({
+      status: newStatus,
+      completed_at: newStatus === "done" ? new Date().toISOString() : null,
+      previous_status: cur.status,
+      corrected_by: user.id,
+      corrected_at: new Date().toISOString(),
+    })
+    .eq("id", logId);
+  if (error) return { ok: false, message: "No se pudo corregir." };
+  revalidatePath("/historial");
+  revalidatePath("/tareas");
+  revalidatePath("/");
+  return { ok: true };
+}

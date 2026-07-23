@@ -366,3 +366,34 @@ export async function setMedicationActive(
   revalidatePath("/");
   return { ok: true };
 }
+
+/** Corrige el estado de un registro de medicamento (solo admin, spec 3.6). */
+export async function correctMedLog(
+  logId: string,
+  newStatus: DoseStatus,
+): Promise<{ ok: boolean; message?: string }> {
+  const user = await requireRole("admin");
+  const supabase = await createClient();
+  const { data: cur } = await supabase
+    .from("medication_logs")
+    .select("status")
+    .eq("id", logId)
+    .maybeSingle();
+  if (!cur) return { ok: false, message: "Registro no encontrado." };
+
+  const { error } = await supabase
+    .from("medication_logs")
+    .update({
+      status: newStatus,
+      administered_at: newStatus === "given" ? new Date().toISOString() : null,
+      previous_status: cur.status,
+      corrected_by: user.id,
+      corrected_at: new Date().toISOString(),
+    })
+    .eq("id", logId);
+  if (error) return { ok: false, message: "No se pudo corregir." };
+  revalidatePath("/historial");
+  revalidatePath("/medicamentos");
+  revalidatePath("/");
+  return { ok: true };
+}

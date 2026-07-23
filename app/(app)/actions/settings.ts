@@ -59,3 +59,24 @@ export async function signOut(): Promise<void> {
   await supabase.auth.signOut();
   redirect("/login");
 }
+
+/** Quita el vínculo de un cuidador con el paciente activo (admin). */
+export async function removeCaregiver(
+  profileId: string,
+): Promise<{ ok: boolean; message?: string }> {
+  const user = await requireRole("admin");
+  if (profileId === user.id) {
+    return { ok: false, message: "No puedes quitarte a ti mismo." };
+  }
+  const patient = await getActivePatient();
+  if (!patient) return { ok: false, message: "No hay paciente activo." };
+  const supabase = await createClient();
+  const { error } = await supabase
+    .from("caregiver_patients")
+    .delete()
+    .eq("profile_id", profileId)
+    .eq("patient_id", patient.id);
+  if (error) return { ok: false, message: "No se pudo quitar." };
+  revalidatePath("/configuracion");
+  return { ok: true };
+}
