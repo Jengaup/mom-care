@@ -232,6 +232,21 @@ export default async function DashboardPage() {
         </Link>
       </section>
 
+      {/* (c3) Contactos */}
+      <Link href="/contactos" className="block">
+        <Card className="flex items-center justify-between active:bg-black/[0.03]">
+          <div>
+            <p className="text-base font-semibold text-ink">
+              Contactos y emergencia
+            </p>
+            <p className="text-sm text-muted">
+              Médicos, familia y datos clave a un toque.
+            </p>
+          </div>
+          <span className="text-xl text-muted">›</span>
+        </Card>
+      </Link>
+
       {/* (d) Próxima cita */}
       <section className="space-y-2">
         <h2 className="text-lg font-bold text-ink">Próxima cita</h2>

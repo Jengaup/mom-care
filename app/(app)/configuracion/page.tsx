@@ -54,6 +54,20 @@ export default async function ConfiguracionPage() {
         <span>📄 Reporte del paciente</span>
         <span className="text-muted">›</span>
       </a>
+      <a
+        href="/contactos"
+        className="min-h-touch flex items-center justify-between rounded-2xl border border-line bg-white px-4 font-semibold text-ink"
+      >
+        <span>📇 Contactos y emergencia</span>
+        <span className="text-muted">›</span>
+      </a>
+      <a
+        href="/signos"
+        className="min-h-touch flex items-center justify-between rounded-2xl border border-line bg-white px-4 font-semibold text-ink"
+      >
+        <span>❤️ Signos vitales</span>
+        <span className="text-muted">›</span>
+      </a>
       {patient ? (
         <PatientsCard
           patients={linkedPatients}
