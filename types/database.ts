@@ -313,6 +313,9 @@ export type Database = {
           status: Database["public"]["Enums"]["task_log_status"];
           note: string | null;
           recorded_by: string;
+          previous_status: Database["public"]["Enums"]["task_log_status"] | null;
+          corrected_by: string | null;
+          corrected_at: string | null;
           created_at: string;
         };
         Insert: {
@@ -324,6 +327,9 @@ export type Database = {
           status: Database["public"]["Enums"]["task_log_status"];
           note?: string | null;
           recorded_by: string;
+          previous_status?: Database["public"]["Enums"]["task_log_status"] | null;
+          corrected_by?: string | null;
+          corrected_at?: string | null;
           created_at?: string;
         };
         Update: {
@@ -335,6 +341,9 @@ export type Database = {
           status?: Database["public"]["Enums"]["task_log_status"];
           note?: string | null;
           recorded_by?: string;
+          previous_status?: Database["public"]["Enums"]["task_log_status"] | null;
+          corrected_by?: string | null;
+          corrected_at?: string | null;
           created_at?: string;
         };
         Relationships: [];

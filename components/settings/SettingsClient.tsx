@@ -8,6 +8,7 @@ import {
   updateMyProfile,
   updateGraceMinutes,
   updateCaregiverRole,
+  removeCaregiver,
   signOut,
 } from "@/app/(app)/actions/settings";
 
@@ -87,6 +88,13 @@ export function SettingsClient({
     router.refresh();
   }
 
+  async function removeCg(profileId: string) {
+    if (!window.confirm("¿Quitar a este cuidador del paciente?")) return;
+    const res = await removeCaregiver(profileId);
+    if (!res.ok && res.message) window.alert(res.message);
+    router.refresh();
+  }
+
   return (
     <div className="space-y-4">
       {/* Perfil propio */}
@@ -150,16 +158,25 @@ export function SettingsClient({
                 {c.id === me.id ? " (tú)" : ""}
               </span>
               {isAdmin && c.id !== me.id ? (
-                <select
-                  defaultValue={c.role}
-                  onChange={(e) =>
-                    changeRole(c.id, e.target.value as "admin" | "caregiver")
-                  }
-                  className="min-h-touch rounded-xl border border-line px-2 text-sm"
-                >
-                  <option value="caregiver">Cuidador</option>
-                  <option value="admin">Admin</option>
-                </select>
+                <div className="flex items-center gap-2">
+                  <select
+                    defaultValue={c.role}
+                    onChange={(e) =>
+                      changeRole(c.id, e.target.value as "admin" | "caregiver")
+                    }
+                    className="min-h-touch rounded-xl border border-line px-2 text-sm"
+                  >
+                    <option value="caregiver">Cuidador</option>
+                    <option value="admin">Admin</option>
+                  </select>
+                  <button
+                    onClick={() => removeCg(c.id)}
+                    className="min-h-touch px-2 text-sm font-semibold text-status-late"
+                    aria-label={`Quitar a ${c.full_name ?? "cuidador"}`}
+                  >
+                    Quitar
+                  </button>
+                </div>
               ) : (
                 <span className="text-sm text-muted">
                   {c.role === "admin" ? "Admin" : "Cuidador"}

@@ -1,9 +1,9 @@
+import { getSessionUser } from "@/lib/auth";
 import { getActivePatient } from "@/lib/patient";
 import { createClient } from "@/lib/supabase/server";
 import { dayRangeUtc, formatApp } from "@/lib/time";
-import { Card } from "@/components/ui/Card";
 import { EmptyState } from "@/components/ui/EmptyState";
-import { StatusBadge } from "@/components/ui/Badge";
+import { HistoryList } from "@/components/history/HistoryList";
 import type { OccurrenceState } from "@/lib/status";
 import type { Enums } from "@/types/database";
 
@@ -31,6 +31,7 @@ export default async function HistorialPage({
 }: {
   searchParams: Promise<SP>;
 }) {
+  const user = await getSessionUser();
   const patient = await getActivePatient();
   if (!patient) {
     return <EmptyState title="No hay un paciente asignado a tu cuenta." />;
@@ -243,23 +244,7 @@ export default async function HistorialPage({
         </button>
       </form>
 
-      {rows.length === 0 ? (
-        <EmptyState title="No hay registros con estos filtros" />
-      ) : (
-        <Card className="divide-y divide-line p-0">
-          {rows.map((r) => (
-            <div key={r.id} className="flex items-center justify-between gap-2 p-3">
-              <div className="min-w-0">
-                <p className="truncate text-base text-ink">{r.label}</p>
-                <p className="text-sm text-muted">
-                  {r.when} · {r.who}
-                </p>
-              </div>
-              <StatusBadge state={r.state} label={r.state === "given" && tipo === "task" ? "Hecho" : undefined} />
-            </div>
-          ))}
-        </Card>
-      )}
+      <HistoryList rows={rows} tipo={tipo} isAdmin={user?.role === "admin"} />
 
       {totalPages > 1 ? (
         <nav className="flex items-center justify-between">

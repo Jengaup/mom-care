@@ -23,12 +23,20 @@ export default async function TareasPage() {
       <header className="flex items-center justify-between">
         <h1 className="font-display text-2xl font-semibold text-ink">Tareas</h1>
         {user?.role === "admin" ? (
-          <Link
-            href="/tareas/nuevo"
-            className="min-h-touch inline-flex items-center rounded-xl bg-brand px-4 font-semibold text-white"
-          >
-            + Nuevo
-          </Link>
+          <div className="flex items-center gap-2">
+            <Link
+              href="/tareas/gestionar"
+              className="min-h-touch inline-flex items-center rounded-xl border border-line bg-surface px-3 font-semibold text-ink"
+            >
+              Editar
+            </Link>
+            <Link
+              href="/tareas/nuevo"
+              className="min-h-touch inline-flex items-center rounded-xl bg-brand px-4 font-semibold text-white"
+            >
+              + Nuevo
+            </Link>
+          </div>
         ) : null}
       </header>
       <TaskList groups={groups} />
