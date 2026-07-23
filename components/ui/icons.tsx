@@ -55,8 +55,20 @@ export function CalendarIcon({ className }: IconProps) {
 export function SettingsIcon({ className }: IconProps) {
   return (
     <svg {...base} className={className} aria-hidden>
-      <circle cx="12" cy="12" r="3" />
-      <path d="M12 2.5v2.5M12 19v2.5M4.2 7l2.2 1.3M17.6 15.7l2.2 1.3M4.2 17l2.2-1.3M17.6 8.3l2.2-1.3" />
+      <path d="M4 7h8M16 7h4M4 12h4M12 12h8M4 17h10M18 17h2" />
+      <circle cx="14" cy="7" r="2" />
+      <circle cx="10" cy="12" r="2" />
+      <circle cx="16" cy="17" r="2" />
+    </svg>
+  );
+}
+
+export function LogoutIcon({ className }: IconProps) {
+  return (
+    <svg {...base} className={className} aria-hidden>
+      <path d="M15 4h3a1 1 0 0 1 1 1v14a1 1 0 0 1-1 1h-3" />
+      <path d="M10 8l-4 4 4 4" />
+      <path d="M6 12h9" />
     </svg>
   );
 }

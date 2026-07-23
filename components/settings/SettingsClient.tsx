@@ -48,8 +48,14 @@ export function SettingsClient({
   async function saveGrace() {
     setGraceMsg("");
     const res = await updateGraceMinutes(Number(grace) || 0);
-    setGraceMsg(res.ok ? "Guardado" : res.message ?? "Error");
-    if (res.ok) router.refresh();
+    if (res.ok) {
+      const v = res.value ?? (Number(grace) || 0);
+      setGrace(String(v));
+      setGraceMsg(`Guardado · ahora ${v} min`);
+      router.refresh();
+    } else {
+      setGraceMsg(res.message ?? "Error");
+    }
   }
 
   async function invite() {
@@ -112,7 +118,10 @@ export function SettingsClient({
         <Card className="space-y-3">
           <CardTitle>Ventana de gracia</CardTitle>
           <p className="text-sm text-muted">
-            Minutos tras la hora antes de marcar una dosis como atrasada.
+            Tras su hora, una dosis se muestra en <b>amarillo</b> (&quot;toca
+            ahora&quot;) durante esta ventana; al pasarla se marca en{" "}
+            <b>rojo</b> (&quot;atrasada&quot;). Ej: con 60 min, una dosis de las
+            8:00 se pone roja a las 9:00.
           </p>
           <div className="flex items-center gap-2">
             <input
