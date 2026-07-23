@@ -120,6 +120,39 @@ export type Database = {
         };
         Relationships: [];
       };
+      attachments: {
+        Row: {
+          id: string;
+          patient_id: string;
+          storage_path: string;
+          file_name: string;
+          mime_type: string | null;
+          note: string | null;
+          uploaded_by: string;
+          created_at: string;
+        };
+        Insert: {
+          id?: string;
+          patient_id: string;
+          storage_path: string;
+          file_name: string;
+          mime_type?: string | null;
+          note?: string | null;
+          uploaded_by: string;
+          created_at?: string;
+        };
+        Update: {
+          id?: string;
+          patient_id?: string;
+          storage_path?: string;
+          file_name?: string;
+          mime_type?: string | null;
+          note?: string | null;
+          uploaded_by?: string;
+          created_at?: string;
+        };
+        Relationships: [];
+      };
       caregiver_patients: {
         Row: {
           id: string;
