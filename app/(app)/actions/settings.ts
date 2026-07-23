@@ -24,7 +24,7 @@ export async function updateMyProfile(input: {
 
 export async function updateGraceMinutes(
   minutes: number,
-): Promise<{ ok: boolean; message?: string }> {
+): Promise<{ ok: boolean; message?: string; value?: number }> {
   await requireRole("admin");
   const patient = await getActivePatient();
   if (!patient) return { ok: false, message: "No hay paciente activo." };
@@ -35,9 +35,8 @@ export async function updateGraceMinutes(
     .update({ grace_minutes: value })
     .eq("id", patient.id);
   if (error) return { ok: false, message: "No se pudo actualizar." };
-  revalidatePath("/configuracion");
-  revalidatePath("/medicamentos");
-  return { ok: true };
+  revalidatePath("/", "layout");
+  return { ok: true, value };
 }
 
 export async function updateCaregiverRole(input: {
