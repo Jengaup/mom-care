@@ -2,9 +2,23 @@
 
 import { revalidatePath } from "next/cache";
 import { redirect } from "next/navigation";
+import { cookies } from "next/headers";
 import { createClient } from "@/lib/supabase/server";
 import { requireRole, requireUser } from "@/lib/auth";
 import { getActivePatient } from "@/lib/patient";
+import { TEXT_SIZE_COOKIE, type TextSize } from "@/lib/prefs";
+
+/** Cambia el tamaño de texto (cookie, sin BD). Afecta a toda la interfaz. */
+export async function setTextSize(size: TextSize): Promise<{ ok: boolean }> {
+  const cookieStore = await cookies();
+  cookieStore.set(TEXT_SIZE_COOKIE, size === "lg" ? "lg" : "normal", {
+    path: "/",
+    maxAge: 60 * 60 * 24 * 365,
+    sameSite: "lax",
+  });
+  revalidatePath("/", "layout");
+  return { ok: true };
+}
 
 export async function updateMyProfile(input: {
   fullName: string;
