@@ -238,7 +238,7 @@ export function NewMedicationForm() {
                 onClick={() => setScheduleType(value)}
                 className={`min-h-touch rounded-xl border px-2 text-sm font-semibold ${
                   scheduleType === value
-                    ? "border-status-done bg-green-50 text-status-done"
+                    ? "border-brand bg-brand-soft text-brand-dark"
                     : "border-line text-muted"
                 }`}
               >
@@ -267,7 +267,7 @@ export function NewMedicationForm() {
                       onClick={() => setFixedTimes([...preset])}
                       className={`min-h-touch rounded-lg border text-sm font-semibold ${
                         selected
-                          ? "border-status-done bg-green-50 text-status-done"
+                          ? "border-brand bg-brand-soft text-brand-dark"
                           : "border-line text-muted"
                       }`}
                     >
@@ -328,7 +328,7 @@ export function NewMedicationForm() {
                       onClick={() => toggleDay(d.iso)}
                       className={`min-h-touch flex-1 rounded-lg border text-sm font-semibold ${
                         days.includes(d.iso)
-                          ? "border-status-done bg-green-50 text-status-done"
+                          ? "border-brand bg-brand-soft text-brand-dark"
                           : "border-line text-muted"
                       }`}
                     >

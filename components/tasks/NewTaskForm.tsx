@@ -124,7 +124,7 @@ export function NewTaskForm() {
                 onClick={() => toggleDay(d.iso)}
                 className={`min-h-touch flex-1 rounded-lg border text-sm font-semibold ${
                   days.includes(d.iso)
-                    ? "border-status-done bg-green-50 text-status-done"
+                    ? "border-brand bg-brand-soft text-brand-dark"
                     : "border-line text-muted"
                 }`}
               >

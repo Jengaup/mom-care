@@ -83,39 +83,47 @@ export default async function DashboardPage() {
     createdAt: a.created_at,
   }));
 
-  const nothingNow = actionableMeds.length === 0 && actionableTasks.length === 0;
+  const nowCount = actionableMeds.length + actionableTasks.length;
+  const nothingNow = nowCount === 0;
 
   return (
     <div className="space-y-5">
-      <header>
-        <p className="text-sm text-muted">
-          {formatApp(`${today}T12:00:00`, "EEEE, d 'de' MMMM")}
-        </p>
-        <h1 className="font-display text-2xl font-semibold text-ink">
-          Hola{user?.fullName ? `, ${user.fullName.split(" ")[0]}` : ""}
-        </h1>
-      </header>
+      <p className="text-sm text-muted">
+        {formatApp(`${today}T12:00:00`, "EEEE, d 'de' MMMM")}
+        {user?.fullName ? ` · Hola, ${user.fullName.split(" ")[0]}` : ""}
+      </p>
 
-      {/* (a) Ahora / atrasado */}
-      <section className="space-y-2">
-        <h2 className="text-lg font-bold text-status-late">Ahora / atrasado</h2>
-        {nothingNow ? (
-          <EmptyState title="Nada pendiente ahora mismo 🎉" />
-        ) : (
-          <div className="space-y-3">
-            {actionableMeds.length > 0 ? (
-              <MedicationList
-                groups={groupMedOccurrences(actionableMeds)}
-                prn={[]}
-                hidePrn
-              />
-            ) : null}
-            {actionableTasks.length > 0 ? (
-              <TaskList groups={groupTaskOccurrences(actionableTasks)} />
-            ) : null}
+      {/* Hero: el estado del cuidado ahora mismo (la tesis de la pantalla) */}
+      {nothingNow ? (
+        <section className="rounded-2xl border border-brand/20 bg-brand-soft p-5">
+          <p className="font-display text-2xl font-semibold text-brand-dark">
+            Todo al día
+          </p>
+          <p className="mt-1 text-muted">Nada requiere atención ahora mismo.</p>
+        </section>
+      ) : (
+        <section className="space-y-3">
+          <div className="rounded-2xl border border-line border-l-[6px] border-l-status-late bg-surface p-5 shadow-card">
+            <p className="font-display text-2xl font-semibold text-ink">
+              {nowCount}{" "}
+              {nowCount === 1 ? "cosa requiere" : "cosas requieren"} atención ahora
+            </p>
+            <p className="mt-1 text-muted">
+              Medicamentos o tareas atrasados o que tocan.
+            </p>
           </div>
-        )}
-      </section>
+          {actionableMeds.length > 0 ? (
+            <MedicationList
+              groups={groupMedOccurrences(actionableMeds)}
+              prn={[]}
+              hidePrn
+            />
+          ) : null}
+          {actionableTasks.length > 0 ? (
+            <TaskList groups={groupTaskOccurrences(actionableTasks)} />
+          ) : null}
+        </section>
+      )}
 
       {/* (b) Medicamentos pendientes (más tarde hoy) */}
       <section className="space-y-2">
@@ -123,7 +131,7 @@ export default async function DashboardPage() {
           <h2 className="text-lg font-bold text-ink">
             Medicamentos pendientes
           </h2>
-          <Link href="/medicamentos" className="text-sm text-status-done">
+          <Link href="/medicamentos" className="text-sm font-semibold text-brand-dark">
             Ver todos
           </Link>
         </div>
@@ -153,7 +161,7 @@ export default async function DashboardPage() {
       <section className="space-y-2">
         <div className="flex items-center justify-between">
           <h2 className="text-lg font-bold text-ink">Tareas pendientes</h2>
-          <Link href="/tareas" className="text-sm text-status-done">
+          <Link href="/tareas" className="text-sm font-semibold text-brand-dark">
             Ver todas
           </Link>
         </div>
@@ -194,7 +202,10 @@ export default async function DashboardPage() {
             </Card>
           </Link>
         ) : (
-          <EmptyState title="No hay citas próximas" />
+          <EmptyState
+            title="No hay citas próximas"
+            hint={user?.role === "admin" ? "Añádela desde Citas." : undefined}
+          />
         )}
       </section>
 
@@ -202,7 +213,7 @@ export default async function DashboardPage() {
       <section className="space-y-2">
         <div className="flex items-center justify-between">
           <h2 className="text-lg font-bold text-ink">Nota de hoy</h2>
-          <Link href="/notas" className="text-sm text-status-done">
+          <Link href="/notas" className="text-sm font-semibold text-brand-dark">
             {todayNote?.content ? "Editar" : "Añadir"}
           </Link>
         </div>
@@ -222,10 +233,10 @@ export default async function DashboardPage() {
         <div className="flex items-center justify-between">
           <h2 className="text-lg font-bold text-ink">Actividad reciente</h2>
           <div className="flex gap-3">
-            <Link href="/reporte" className="text-sm text-status-done">
+            <Link href="/reporte" className="text-sm font-semibold text-brand-dark">
               Reporte
             </Link>
-            <Link href="/historial" className="text-sm text-status-done">
+            <Link href="/historial" className="text-sm font-semibold text-brand-dark">
               Historial
             </Link>
           </div>
