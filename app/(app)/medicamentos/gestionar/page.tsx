@@ -2,6 +2,7 @@ import Link from "next/link";
 import { requireRole } from "@/lib/auth";
 import { getActivePatient } from "@/lib/patient";
 import { createClient } from "@/lib/supabase/server";
+import { loadStockFor } from "@/lib/inventory";
 import { EmptyState } from "@/components/ui/EmptyState";
 import {
   MedManageList,
@@ -20,12 +21,15 @@ export default async function GestionarMedicamentosPage() {
 
   const { data: meds } = await supabase
     .from("patient_medications")
-    .select("id, name, dose, unit, is_active")
+    .select(
+      "id, name, dose, unit, is_active, track_stock, units_per_dose, stock_unit_label, low_stock_threshold",
+    )
     .eq("patient_id", patient.id)
     .order("is_active", { ascending: false })
     .order("name");
   const medList = meds ?? [];
   const medIds = medList.map((m) => m.id);
+  const stock = await loadStockFor(medList);
 
   const { data: scheds } = medIds.length
     ? await supabase
@@ -47,14 +51,25 @@ export default async function GestionarMedicamentosPage() {
     freqByMed.set(s.patient_medication_id, arr);
   }
 
-  const items: ManageMed[] = medList.map((m) => ({
-    id: m.id,
-    name: m.name,
-    dose: m.dose,
-    unit: m.unit,
-    freq: (freqByMed.get(m.id) ?? []).join(", ") || "Sin horario",
-    isActive: m.is_active,
-  }));
+  const items: ManageMed[] = medList.map((m) => {
+    const s = stock.get(m.id);
+    return {
+      id: m.id,
+      name: m.name,
+      dose: m.dose,
+      unit: m.unit,
+      freq: (freqByMed.get(m.id) ?? []).join(", ") || "Sin horario",
+      isActive: m.is_active,
+      stock: s
+        ? {
+            remaining: s.remaining,
+            label: s.label,
+            isLow: s.isLow,
+            dosesLeft: s.dosesLeft,
+          }
+        : null,
+    };
+  });
 
   return (
     <div className="space-y-4">
