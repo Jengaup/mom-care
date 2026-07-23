@@ -72,6 +72,13 @@ export default async function ConfiguracionPage() {
         <span>❤️ Signos vitales</span>
         <span className="text-muted">›</span>
       </a>
+      <a
+        href="/documentos"
+        className="min-h-touch flex items-center justify-between rounded-2xl border border-line bg-white px-4 font-semibold text-ink"
+      >
+        <span>📎 Documentos y fotos</span>
+        <span className="text-muted">›</span>
+      </a>
       {patient ? (
         <PatientsCard
           patients={linkedPatients}
